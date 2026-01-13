@@ -1,0 +1,15 @@
+html, body {
+    height: 100% !important;
+  }
+[class*=sidebar-dark-]{
+    background-color: #173078 !important;
+}
+.sidebar-dark-primary .nav-sidebar>.nav-item>.nav-link.active, .sidebar-light-primary .nav-sidebar>.nav-item>.nav-link.active{
+    background-color: #1961af !important;
+}
+
+@media print {
+    @page {
+      size: landscape
+    }
+  }
