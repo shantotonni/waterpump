@@ -276,7 +276,6 @@ export default {
         })
         .catch((error) => {
             this.$toastr.error('Something went wrong.');
-            console.log(error);
         });
     },
     configPagination(data){
@@ -320,7 +319,6 @@ export default {
                 })
                 .catch((error) => {
                     this.$toastr.error('Something went wrong.');
-                    console.log(error);
                 });
             }
         }
@@ -337,7 +335,6 @@ export default {
     print () {
       // Pass the element id here
       this.$htmlToPaper('printMe', null, () => {
-        // console.log('Printing completed or was cancelled!');
      });
     },
     exportReport(){
@@ -346,11 +343,9 @@ export default {
         .then((response) => {
             this.json_data = [];
             this.json_data = response.data;
-            // console.log(response)
         })
         .catch((error) => {
             this.$toastr.error('Something went wrong.');
-            console.log(error);
         });
     },
     moment: function (date) {

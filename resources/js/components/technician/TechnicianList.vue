@@ -120,16 +120,16 @@
                                 </div>
                                 <div class="form-group">
                                     <label>Territories</label>
-<!--                                    <multiselect-->
-<!--                                        v-model="form.territories"-->
-<!--                                        :options="territoryList"-->
-<!--                                        label="TTYName"-->
-<!--                                        track-by="TTYCode"-->
-<!--                                        :multiple="true"-->
-<!--                                        :close-on-select="true"-->
-<!--                                        placeholder="Select Territories"-->
-<!--                                        :disabled="form.is_national"-->
-<!--                                    ></multiselect>-->
+                                    <multiselect
+                                        v-model="form.territories"
+                                        :options="territoryList"
+                                        label="TTYName"
+                                        track-by="TTYCode"
+                                        :multiple="true"
+                                        :close-on-select="true"
+                                        placeholder="Select Territories"
+                                        :disabled="form.is_national"
+                                    ></multiselect>
                                 </div>
                                 <div class="form-group">
                                     <label><input type="checkbox" v-model="form.is_national" /> National Technician (All Territories)</label>
@@ -154,13 +154,13 @@
 <script>
 import DataTable from '../datatable/DataTable';
 import Pagination from '../pagination/Pagination';
-//import Multiselect from "vue-multiselect";
+import Multiselect from "vue-multiselect";
 
     export default {
         components: {
             'data-table': DataTable,
             'pagination': Pagination,
-           // Multiselect
+            Multiselect 
         },
         data: () => {
         let sortOrders = {};
@@ -381,7 +381,7 @@ import Pagination from '../pagination/Pagination';
 };
 </script>
 
-<!--<style src="vue-multiselect/dist/vue-multiselect.min.css"></style>-->
+<style src="vue-multiselect/dist/vue-multiselect.min.css"></style>
 <style scoped>
 .activestatus{
     color: green;

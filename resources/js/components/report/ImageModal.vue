@@ -41,7 +41,6 @@ export default {
       let instance = this;
       axios.get(this.base_url+'/api/admindashboard/getImage/'+id+'/'+type,config)
           .then(function(response) {
-            console.log(response.data.data)
             instance.images = [];
             let remote_url = 'https://app.acibd.com/apps/waterpump/public/uploads/';
             if (response.data.imgType === 'SelfWarrantyCardImage') {
@@ -77,7 +76,6 @@ export default {
               });
             }
           }).catch(function (error){
-            console.log(error);
       })
     },
   }

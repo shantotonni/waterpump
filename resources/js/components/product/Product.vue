@@ -267,7 +267,6 @@ export default {
         if (localStorage.getItem('auth') != null) {
             this.isAuthenticate = true;
             this.userId = this.$store.state.userid;
-            // console.log(localStorage.getItem('auth'));
             const token = localStorage.getItem('auth');
             axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
             this.userList();
@@ -286,23 +285,18 @@ export default {
   methods: {
     userList(url = this.base_url+'/api/admindashboard/users') {
         this.tableData.draw++;
-        // console.log(this.tableData);
       axios
         .get(url, { params: this.tableData }, { token: this.$store.state.token })
         .then((response) => {
             this.loader = false;
-            // console.log(response.data);
             if(this.tableData.draw == response.data.users.draw){
-                console.log(response.data);
                 this.usersList = response.data.users.data.data;
                 this.configPagination(response.data.users.data);
-                // console.log(response.data.users.data);
             }
 
         })
         .catch((err) => {
             this.$toastr.error('Nothing Found');
-            // console.log(err);
         });
     },
     configPagination(data){
@@ -330,15 +324,12 @@ export default {
         axios
         .get(this.base_url+"/api/service/servicedetails", { token: this.$store.state.token })
         .then((res) => {
-        //   console.log(res.data);
           if (res.data.status == true) {
               this.districtList = res.data.district;
               this.territoryList = res.data.territory;
-            //   console.log(this.territoryList);
           }
         })
         .catch((err) => {
-          console.log("Error!");
         });
     },
     createUser() {
@@ -352,7 +343,6 @@ export default {
         }else{
         this.form.updated_by = this.$store.state.userid;
         }
-        console.log(this.form);
         this.form.post(this.base_url+'/api/auth/register')
         .then((response)=>{
                 this.form.reset();
@@ -362,11 +352,9 @@ export default {
 
         }).catch((error)=>{
             this.$toastr.error('Something went wrong. Please try again');
-            console.log(error);
         })
     },
     editUser(user) {
-        console.log(user);
         this.isInsert = false;
         this.getServiceDetails();
         this.form.username = user.UserName;
@@ -382,7 +370,6 @@ export default {
         $('.modal').modal();
     },
     lockUser(staffId, unlock){
-        // console.log(staffId);
         this.form.staffid = staffId;
         if(unlock==true){
         this.form.active = 'Y';
@@ -390,10 +377,8 @@ export default {
         this.form.active = 'N';
         }
         this.form.updated_by = this.$store.state.userid;
-        // console.log(this.form);
         this.form.post(this.base_url+'/api/auth/lockuser')
         .then((res) => {
-          console.log(res.data);
           if (res.data.status == true) {
                 if(unlock == true){
                     this.$toastr.success('User unlocked successfully');
@@ -405,7 +390,6 @@ export default {
         })
         .catch((err) => {
             this.$toastr.error('Something went wrong!');
-          console.log("Error!");
         });
     },
   }

@@ -36,7 +36,6 @@ export default {
   },
   mounted() {
     this.allCategory();
-    console.log("Component caaa.");
   },
   methods: {
     allCategory() {

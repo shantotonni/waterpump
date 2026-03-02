@@ -140,38 +140,6 @@
               <div class="col-lg-6 col-md-3 col-sm-3"></div>
               <div class="col-md-12 col-sm-12 col-12 mb-3 mt-3"></div>
 
-              <!-- <div class="col-md-12 col-sm-12 col-12">
-                  <div class="col-md-12 text-center mb-3 bold">
-                      <span><b>SPLY Wise Service Comparison</b></span>
-                  </div>
-                  <div class="col-md-12">
-                      <form class="form-inline">
-                          <div class="form-group">
-                              <p class="form-control-static">Year 1</p>
-                          </div>
-                          <div class="form-group mx-sm-3">
-                              <input class="form-control" type="year" v-model="formData.fromDate">
-                          </div>
-                          <div class="form-group">
-                              <p class="form-control-static">Year 2</p>
-                          </div>
-                          <div class="form-group mx-sm-3">
-                              <input class="form-control" type="year" v-model="formData.toDate">
-                          </div>
-                          <div class="form-group">
-                              <button type="submit" @click.prevent="ttyWiseDailyServiceChart()" class="btn btn-default button-border"><i class="fas fa-filter"></i> Filter</button>
-                          </div>
-                          <div class="form-group mx-sm-3">
-                          <button type="submit" @click.prevent="clearFilter()" class="btn btn-default button-border">Clear Filter</button>
-                          </div>
-                      </form>
-                  </div>
-              </div>
-              <div class="col-md-12 col-sm-12 col-12 mb-3">
-                  <div id="chart">
-                      <apexchart type="bar" height="350" :options="splyChartOptions" :series="splySeries"></apexchart>
-                  </div>
-              </div> -->
 
             </div>
             <div class="row">
@@ -233,9 +201,6 @@ import moment from 'moment'
 export default {
   name: "Home",
   data: () => ({
-    return: {
-      responseData: []
-    },
     series: [{
       name: 'No. of Service(s)',
       data: []
@@ -469,8 +434,8 @@ export default {
     avgCSIRating: '',
     loader: false,
     formData: {
-      fromDate: moment().startOf('month').format('YYYY-MM-DD'),
-      toDate: moment().endOf('month').format('YYYY-MM-DD'),
+      fromDate: '',
+      toDate: '',
       fromYear: moment().format('YYYY') - 1,
       toYear: moment().format('YYYY')
     },
@@ -478,7 +443,6 @@ export default {
     serviceCount: 0
   }),
   mounted() {
-    // console.log(this.chartOptions);
     if (localStorage.getItem('auth') != null) {
       this.isAuthenticate = true;
       const token = localStorage.getItem('auth')
@@ -496,7 +460,6 @@ export default {
   methods: {
     dashboard() {
       axios.get(this.base_url + "/api/admindashboard/dashboardSummary", {token: this.$store.state.token}).then((res) => {
-        console.log(res)
         if (res) {
           this.totalService = res.data.TotalServiceGiven;
           this.monthlyService = res.data.CurrentMonthServiceGiven;
@@ -505,7 +468,6 @@ export default {
         }
       })
           .catch((err) => {
-            console.log(err);
           });
     },
     ttyWiseDailyServiceChart() {
@@ -515,7 +477,6 @@ export default {
           this.chartOptions.xaxis.categories.splice(0);
           this.series[0].data.splice(0);
           var result = res.data.TTyWiseTodayServiceProvided;
-          // console.log(res);
           let sum = 0
           for (var i = 0; i < result.length; i++) {
             this.chartOptions.xaxis.categories.push(result[i].TTYName);
@@ -526,12 +487,9 @@ export default {
           this.$refs.realtimeChart.updateSeries([{
             data: this.series[0].data,
           }], false, true);
-          // console.log(this.series[0]);
-          // console.log(this.chartOptions.xaxis);
         }
       })
           .catch((err) => {
-            console.log(err);
           });
     },
     ttyWiseMonthlyServiceRatio() {
@@ -539,7 +497,6 @@ export default {
           .get(this.base_url + "/api/admindashboard/ttywisemonthlyserviceratio", {params: this.formData}, {token: this.$store.state.token})
           .then((res) => {
             if (res) {
-              // console.log(res.data.TTyWiseMonthlyServiceRatio);
               this.piChartOptions.labels.splice(0);
               this.piSeries.splice(0);
               var result = res.data.TTyWiseMonthlyServiceRatio;
@@ -547,12 +504,9 @@ export default {
                 this.piChartOptions.labels.push(result[i].TTYName);
                 this.piSeries.push(parseInt(result[i].NoOfServices))
               }
-              // console.log(this.piSeries);
-              // console.log(this.piChartOptions);
             }
           })
           .catch((err) => {
-            console.log(err);
           });
     },
     splyWiseServiceComparison() {
@@ -560,46 +514,17 @@ export default {
           .get(this.base_url + "/api/admindashboard/splywiseservicecomparison", {params: this.formData}, {token: this.$store.state.token})
           .then((res) => {
             if (res) {
-              // console.log(res.data.splyWiseYearlyServiceComparison);
-              // this.piChartOptions.labels.splice(0);
-              // this.piSeries.splice(0);
-              // var result = res.data.TTyWiseMonthlyServiceRatio;
-              // for(var i=0; i<result.length; i++){
-              //     this.piChartOptions.labels.push(result[i].TTYName);
-              //     this.piSeries.push(parseInt(result[i].NoOfServices))
-              // }
-              // console.log(this.piSeries);
-              // console.log(this.piChartOptions);
             }
           })
           .catch((err) => {
-            console.log(err);
           });
     },
     yearWiseCompare() {
       let instance = this
       axios.get(this.base_url + "/api/admindashboard/yearwisecompare", {params: this.formData}, {token: this.$store.state.token}).then((res) => {
-        console.log(res.data.data)
-        // instance.barOptions = {
-        //   chart: {
-        //     id: 'basic-bar'
-        //   },
-        //   xaxis: {
-        //     categories: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August','September','October','November','December']
-        //   }
-        // }
         instance.seriesBar = res.data.data
-        // instance.seriesBar = [{
-        //   name: '2021',
-        //   data: [30, 40, 45, 50, 49, 60, 70, 91,5,7,8,12]
-        // },{
-        //   name: '2022',
-        //   data: [31, 42, 40, 51, 35, 30, 32, 34,56,78,55,100]
-        // }];
-        console.log(instance.seriesBar)
       })
           .catch((err) => {
-            console.log(err);
           });
     },
     moment: function (date) {

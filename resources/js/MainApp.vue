@@ -131,6 +131,12 @@
                                   <p>Engineer Wise CSI</p>
                                 </router-link>
                               </li>
+                              <li class="nav-item" v-if="this.$store.state.usertype!='CC'">
+                                <router-link :to="{name : 'SummaryReport'}" class="nav-link">
+                                  <i class="fas fa-file"></i>
+                                  <p>Summary Report</p>
+                                </router-link>
+                              </li>
 <!--                                <li class="nav-item">-->
 <!--                                    <router-link :to="{name : 'DetailReport'}" class="nav-link">-->
 <!--                                        <i class="fas fa-file"></i>-->
@@ -202,10 +208,8 @@
                return window.location.origin + img
             },
             logout() {
-                // console.log('hlw');
                 const accessToken = this.$store.state.token;
                 if (accessToken) {
-                    // console.log(accessToken);
                     axios.defaults.headers.common['Authorization'] = 'Bearer ' + accessToken
                     axios
                     .post("/waterpump/public/api/auth/logout", { token: accessToken })
@@ -214,11 +218,10 @@
                         this.$router.push({name: 'Login'});
                         this.$toastr.success('Successfully Logged Out');
                 })
-                .catch((err) => {
+                .catch(() => {
                     this.$store.commit("clearToken");
                     this.$router.push({name: 'Login'});
                     this.$toastr.success('Please login again');
-                    console.log(err);
                 });
                 }else{
                     this.$store.commit("clearToken");

@@ -46,6 +46,11 @@ class ServiceMaster extends Model
         return "ServiceMasterID";
     }
 
+    /**
+     * Get all of the comments for the ServiceMaster
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
     public function srviceDetails()
     {
         return $this->hasMany(ServiceDetails::class);

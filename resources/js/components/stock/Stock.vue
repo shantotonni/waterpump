@@ -271,7 +271,6 @@ export default {
         if (localStorage.getItem('auth') != null) {
             this.isAuthenticate = true;
             this.userId = this.$store.state.userid;
-            // console.log(localStorage.getItem('auth'));
             const token = localStorage.getItem('auth');
             axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
             this.stockList();
@@ -290,23 +289,18 @@ export default {
   methods: {
     stockList(url = this.base_url+'/api/stock/stockList') {
         this.tableData.draw++;
-        // console.log(this.tableData);
       axios
         .get(url, { params: this.tableData }, { token: this.$store.state.token })
         .then((response) => {
             this.loader = false;
-            console.log(response.data.stockList);
             if(this.tableData.draw == response.data.stockList.draw){
-                // console.log(response.data.users.draw);
                 this.sparePartsStockList = response.data.stockList.data.data;
                 this.configPagination(response.data.stockList.data);
-                // console.log(response.data.users.data);
             }
 
         })
         .catch((err) => {
             this.$toastr.error('Nothing Found');
-            // console.log(err);
         });
     },
     configPagination(data){
@@ -334,14 +328,11 @@ export default {
         axios
         .get(this.base_url+"/api/service/servicedetails", { token: this.$store.state.token })
         .then((res) => {
-        //   console.log(res.data);
           if (res.data.status == true) {
               this.sparePartsList = res.data.spareParts;
-            //   console.log(this.territoryList);
           }
         })
         .catch((err) => {
-          console.log("Error!");
         });
     },
     addStock() {
@@ -355,14 +346,11 @@ export default {
         axios
         .get(this.base_url+"/api/stock/staffinfo", { token: this.$store.state.token })
         .then((res) => {
-          console.log(res.data);
           if (res.data.status == true) {
               this.usersList = res.data.userinfo;
-            //   console.log(this.territoryList);
           }
         })
         .catch((err) => {
-          console.log("Error!");
         });
     },
     saveStock() {
@@ -371,7 +359,6 @@ export default {
         }else{
         this.form.EditBy = this.$store.state.userid;
         }
-        console.log(this.form);
         this.form.post(this.base_url+'/api/stock/addstock')
         .then((response)=>{
                 this.form.reset();
@@ -381,11 +368,9 @@ export default {
 
         }).catch((error)=>{
             this.$toastr.error('Something went wrong. Please try again');
-            console.log(error);
         })
     },
     editStock(list) {
-        console.log(list);
         this.isInsert = false;
         this.getServiceDetails();
         this.getStaffIds();
@@ -402,7 +387,6 @@ export default {
     print () {
       // Pass the element id here
       this.$htmlToPaper('printMe', null, () => {
-        // console.log('Printing completed or was cancelled!');
      });
     },
     exportReport(){
@@ -410,11 +394,9 @@ export default {
         .get(this.base_url+'/api/stock/exportStockReport', { params: this.tableData }, { token: this.$store.state.token })
         .then((response) => {
             this.json_data = response.data;
-            console.log(response)
         })
         .catch((error) => {
             this.$toastr.error('Something went wrong.');
-            console.log(error);
         });
     },
   }

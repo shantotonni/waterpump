@@ -68,6 +68,32 @@ class ReportController extends Controller
 
     }
 
+    public function serviceSummaryReport(Request $request)
+    {
+        try {
+            $fromDate = $request->input('fromDate');
+            $toDate = $request->input('toDate');
+            $business = $request->input('business');
+            $data = DB::select("SET NOCOUNT ON; EXEC ServiceSummaryReport '$fromDate', '$toDate 23:59:59'");
+
+            if (!empty($business)) {
+                $data = collect($data)->filter(function ($item) use ($business) {
+                    return $item->Business === $business;
+                })->values()->all();
+            }
+
+            return response()->json([
+                'status' => true,
+                'data' => $data
+            ], 200)->header('Content-Type', 'application/json');
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Something went wrong!'
+            ], 500);
+        }
+    }
+
     public function providedMergedServiceReport(Request $request)
     {
         $columns = ['ServiceMasterID', 'StaffID', 'CustomerName', 'Mobile', 'TTYName', 'username', 'AttendDate', 'Feedback', 'Point'];

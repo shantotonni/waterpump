@@ -306,7 +306,6 @@ export default {
         })
         .catch((error) => {
             this.$toastr.error('Something went wrong.');
-            console.log(error);
         });
     },
     configPagination(data){
@@ -334,10 +333,8 @@ export default {
         this.point.ServiceMasterID=row.ServiceMasterID
         this.point.EntryBy=this.$store.state.userid
         $('#pointadd').prop('disabled', true);
-        // console.log(this.point);
         axios.defaults.headers.common['Authorization'] = 'Bearer ' + this.$store.state.token;
         axios.post(url, this.point).then((res) => {
-        //   console.log(res);
           if (res.data.status == true) {
             this.$toastr.success('Point added successfully');
             this.allService();
@@ -346,8 +343,6 @@ export default {
         .catch((err) => {
             // this.isLooggedin = false;
             this.$toastr.error('Something went wrong.');
-
-          console.log(err);
         });
     },
     clearFilter() {
@@ -363,34 +358,27 @@ export default {
     exportReport(){
         axios.get(this.base_url+'/api/admindashboard/exportServiceReport', { params: this.tableData }, { token: this.$store.state.token })
         .then((response) => {
-             console.log(response.data);
             this.json_data = [];
             this.json_data = response.data;
         })
         .catch((error) => {
             this.$toastr.error('Something went wrong.');
-            console.log(error);
         });
     },
     addRemarks(id){
       axios.defaults.headers.common['Authorization'] = 'Bearer ' + this.$store.state.token;
       axios.post(this.base_url + '/api/customercare/add-remarks', {master_id:id,Remarks:this.Remarks}).then((res) => {
-           console.log(res);
         //this.allService();
       })
           .catch((err) => {
             // this.isLooggedin = false;
             this.$toastr.error('Something went wrong.');
-
-            console.log(err);
           });
     },
     getAllRemarks() {
       axios.get(this.base_url+ "/api/admindashboard/get-all-remarks").then((response) => {
         this.remarks = response.data.remarks
-        console.log(response)
           }).catch((error) => {
-            console.log(error);
           });
     },
   },

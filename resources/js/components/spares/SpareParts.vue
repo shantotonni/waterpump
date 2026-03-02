@@ -223,7 +223,6 @@ export default {
       axios
         .get(url, { params: this.tableData }, { token: this.$store.state.token })
         .then((response) => {
-            console.log(response);
             this.loader = false;
             if(this.tableData.draw == response.data.dailySparePartsReport.draw){
                 this.reportData = response.data.dailySparePartsReport.data.data;
@@ -235,7 +234,6 @@ export default {
         })
         .catch((error) => {
             this.$toastr.error('Something went wrong.');
-            console.log(error);
         });
     },
     configPagination(data){
@@ -267,7 +265,6 @@ export default {
     print () {
       // Pass the element id here
       this.$htmlToPaper('printMe', null, () => {
-        // console.log('Printing completed or was cancelled!');
      });
     },
     exportReport(){
@@ -275,11 +272,9 @@ export default {
                 .get(this.base_url+'/api/admindashboard/exportDailySparePartsReport', { params: this.tableData }, { token: this.$store.state.token })
                 .then((response) => {
                     this.json_data = response.data;
-                    // console.log(response)
                 })
                 .catch((error) => {
                     this.$toastr.error('Something went wrong.');
-                    console.log(error);
                 });
     },
     moment: function (date) {

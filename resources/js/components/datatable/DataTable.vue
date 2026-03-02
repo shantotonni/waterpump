@@ -46,7 +46,6 @@ th     { background:#eee; }
 export default {
     props: ['columns', 'sortKey', 'sortOrders'],
     mounted() {
-        // console.log(this.columns);
     }
 }
 </script>

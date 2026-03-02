@@ -175,7 +175,6 @@ export default {
         if (localStorage.getItem('auth') != null) {
             this.isAuthenticate = true;
             this.userId = this.$store.state.userid;
-            // console.log(localStorage.getItem('auth'));
             const token = localStorage.getItem('auth');
             axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
             this.brandList();
@@ -194,23 +193,18 @@ export default {
   methods: {
     brandList(url = this.base_url+'/api/brand/brandlist') {
         this.tableData.draw++;
-        // console.log(this.tableData);
       axios
         .get(url, { params: this.tableData }, { token: this.$store.state.token })
         .then((response) => {
             this.loader = false;
-            console.log(response.data);
             if(this.tableData.draw == response.data.brands.draw){
-                console.log(response.data);
                 this.brands = response.data.brands.data.data;
                 this.configPagination(response.data.brands.data);
-                // console.log(response.data.users.data);
             }
 
         })
         .catch((err) => {
             this.$toastr.error(err);
-            // console.log(err);
         });
     },
     configPagination(data){
@@ -238,7 +232,6 @@ export default {
         $('.modal').modal();
     },
     saveBrand() {
-        console.log(this.form);
         this.form.post(this.base_url+'/api/brand/create')
         .then((response)=>{
                 this.form.reset();
@@ -248,11 +241,9 @@ export default {
 
         }).catch((error)=>{
             this.$toastr.error('Something went wrong. Please try again');
-            console.log(error);
         })
     },
     editUser(user) {
-        console.log(user);
         this.isInsert = false;
         this.getServiceDetails();
         this.form.username = user.UserName;
@@ -268,7 +259,6 @@ export default {
         $('.modal').modal();
     },
     lockUser(staffId, unlock){
-        // console.log(staffId);
         this.form.staffid = staffId;
         if(unlock==true){
         this.form.active = 'Y';
@@ -276,10 +266,8 @@ export default {
         this.form.active = 'N';
         }
         this.form.updated_by = this.$store.state.userid;
-        // console.log(this.form);
         this.form.post(this.base_url+'/api/auth/lockuser')
         .then((res) => {
-          console.log(res.data);
           if (res.data.status == true) {
                 if(unlock == true){
                     this.$toastr.success('User unlocked successfully');
@@ -291,7 +279,6 @@ export default {
         })
         .catch((err) => {
             this.$toastr.error('Something went wrong!');
-          console.log("Error!");
         });
     },
   }

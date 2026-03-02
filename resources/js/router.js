@@ -1,9 +1,7 @@
 import Vue from 'vue';
-import Vuex from 'vuex'
 import Router from 'vue-router';
 
 Vue.use(Router);
-Vue.use(Vuex);
 
 import Login from './components/login/LoginForm';
 import FrontHome from './components/FrontHome';
@@ -22,6 +20,7 @@ import MonthlySparePartsReport from './components/spares/MonthlySparePartsReport
 import Brand from './components/brand/Brand';
 import Product from './components/product/Product';
 import EngineerWiseCSI from "./components/report/EngineerWiseCSI.vue";
+import SummaryReport from "./components/report/SummaryReport.vue";
 
 const base_url = '/waterpump';
 
@@ -111,6 +110,11 @@ const routes = [
         path: base_url+'/product',
         component:Product,
         name:'Product',
+    },
+    {
+        path: base_url+'/summary-report',
+        component:SummaryReport,
+        name:'SummaryReport',
     },
 
 ];

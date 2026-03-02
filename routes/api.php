@@ -77,6 +77,7 @@ Route::group(['middleware' => 'api', 'namespace'  => 'App\Http\Controllers', 'pr
         Route::get('ttywisemonthlyserviceratio', 'AdminDashboardController@getTTYWiseMonthlyServiceChartData');
         Route::get('splywiseservicecomparison', 'AdminDashboardController@getSplyWiseYearlyServiceChartData');
         Route::get('yearwisecompare', 'AdminDashboardController@yearwisecompare');
+        Route::get('servicesummaryreport', 'ReportController@serviceSummaryReport');
     }
 );
 

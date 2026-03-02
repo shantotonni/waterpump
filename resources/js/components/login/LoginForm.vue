@@ -78,7 +78,6 @@ export default {
       if(localStorage.getItem('auth') !== null){
           this.isAuthenticate = true;
           this.$router.push({name : 'Home'});
-        //   console.log(localStorage.getItem('auth'));
       }
   },
   methods: {

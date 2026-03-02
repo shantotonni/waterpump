@@ -9,26 +9,32 @@ const getters = {
     authStatus: state => state.status,
 };
 const actions = {
-    loginUser( {}, user){
+    loginUser( { commit }, user){
         axios
         .post("/api/auth/login", {
             staffid: user.staffid,
             password: user.password
         })
-        then( response => {
-            const token = resp.data.token
+        .then( response => {
+            const token = response.data.token
             localStorage.setItem('auth', token)
-            commit(AUTH_SUCCESS, token)
-            console.log(response.data);
+            commit('AUTH_SUCCESS', token)
         })
         .catch(err => {
-            commit(AUTH_ERROR, err)
+            commit('AUTH_ERROR', err)
             localStorage.removeItem('user-token')
-            reject(err)
         })
     }
 };
-const mutations = {}
+const mutations = {
+    AUTH_SUCCESS(state, token) {
+        state.token = token;
+        state.status = 'success';
+    },
+    AUTH_ERROR(state) {
+        state.status = 'error';
+    }
+}
 export default {
     namespaced: true,
     state,

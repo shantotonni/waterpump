@@ -152,7 +152,6 @@ export default {
         this.json_data = response.data.data;
       }).catch((error) => {
         this.$toastr.error('Something went wrong.');
-        console.log(error);
       });
     },
     moment: function (date) {
