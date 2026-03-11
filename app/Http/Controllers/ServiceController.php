@@ -19,7 +19,7 @@ class ServiceController extends Controller
 
     public function __construct()
     {
-        $this->middleware('auth:api');
+        $this->middleware('auth:api')->except(['getAllTerritories']);
         $this->user = $this->guard()->user();
     }
 
@@ -470,6 +470,6 @@ class ServiceController extends Controller
 
     protected function guard()
     {
-        return Auth::guard();
+        return Auth::guard('api');
     }
 }

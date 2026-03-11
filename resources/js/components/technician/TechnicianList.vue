@@ -137,20 +137,38 @@
                     </div>
                     <div class="form-group modern-form-group">
                       <label><i class="fas fa-map"></i> Territories</label>
-                      <multiselect
-                          v-model="form.territories"
-                          :options="territoryList"
-                          label="TTYName"
-                          track-by="TTYCode"
-                          :multiple="true"
-                          :close-on-select="true"
-                          placeholder="Select Territories"
-                          :disabled="form.is_national"
-                      ></multiselect>
+                      <div class="territory-selector" :class="{'disabled': form.is_national}">
+                        <div class="territory-selected-box" @click="toggleTerritoryDropdown" v-if="!form.is_national">
+                          <div class="territory-tags" v-if="form.territories.length">
+                            <span class="territory-tag" v-for="(t, idx) in form.territories" :key="t.TTYCode">
+                              {{ t.TTYName }}
+                              <i class="fas fa-times territory-tag-remove" @click.stop="removeTerritory(idx)"></i>
+                            </span>
+                          </div>
+                          <span class="territory-placeholder" v-else>Select Territories</span>
+                          <i class="fas fa-chevron-down territory-arrow" :class="{'rotate': showTerritoryDropdown}"></i>
+                        </div>
+                        <div class="territory-selected-box" v-else>
+                          <span class="territory-all-label"><i class="fas fa-globe-asia"></i> All Territories (National)</span>
+                        </div>
+                        <div class="territory-dropdown" v-if="showTerritoryDropdown && !form.is_national">
+                          <input type="text" class="territory-search" v-model="territorySearch" placeholder="Search territory...">
+                          <div class="territory-options">
+                            <label class="territory-option" v-for="t in filteredTerritories" :key="t.TTYCode"
+                                :class="{'selected': isTerritorySelected(t)}">
+                              <input type="checkbox" :checked="isTerritorySelected(t)" @change="toggleTerritory(t)">
+                              <span>{{ t.TTYName }}</span>
+                            </label>
+                            <div class="territory-no-result" v-if="filteredTerritories.length === 0">
+                              No territories found
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                     <div class="form-group modern-form-group">
                       <label class="national-check">
-                        <input type="checkbox" v-model="form.is_national" />
+                        <input type="checkbox" v-model="form.is_national" @change="onNationalChange" />
                         <span><i class="fas fa-globe-asia"></i> National Technician (All Territories)</span>
                       </label>
                     </div>
@@ -178,13 +196,11 @@
 <script>
 import DataTable from '../datatable/DataTable';
 import Pagination from '../pagination/Pagination';
-import Multiselect from "vue-multiselect";
 
     export default {
         components: {
             'data-table': DataTable,
             'pagination': Pagination,
-            Multiselect 
         },
         data: () => {
         let sortOrders = {};
@@ -225,6 +241,8 @@ import Multiselect from "vue-multiselect";
             loader: false,
             isInsert: true,
             territoryList: [],
+            showTerritoryDropdown: false,
+            territorySearch: '',
             form: {
                 id: null,
                 name: '',
@@ -239,6 +257,13 @@ import Multiselect from "vue-multiselect";
             isAuthenticate: ''
         };
     },
+    computed: {
+        filteredTerritories() {
+            if (!this.territorySearch) return this.territoryList;
+            const s = this.territorySearch.toLowerCase();
+            return this.territoryList.filter(t => t.TTYName.toLowerCase().includes(s));
+        }
+    },
     created(){
         if(localStorage.getItem('auth') != null){
             this.isAuthenticate = true;
@@ -251,17 +276,21 @@ import Multiselect from "vue-multiselect";
     mounted() {
         this.loader = true;
         $(this.$refs.modal).on('hidden.bs.modal', () => {
-            // this.form.reset();
             this.resetForm();
         })
         this.getTechnicians();
         this.getTerritories();
+        document.addEventListener('click', this.closeTerritoryDropdown);
+    },
+    beforeDestroy() {
+        document.removeEventListener('click', this.closeTerritoryDropdown);
     },
     methods: {
         getTerritories() {
-            axios.get(this.base_url + '/api/service/getallterritories', { token: this.$store.state.token }).then((res) => {
-                this.territoryList = res.data.data;
-            }).catch(() => {
+            return axios.get(this.base_url + '/api/service/getallterritories').then((res) => {
+                this.territoryList = res.data.data || [];
+            }).catch((error) => {
+                console.error('Territory load error:', error);
                 this.$toastr.error('Failed to load territories');
             });
         },
@@ -398,14 +427,60 @@ import Multiselect from "vue-multiselect";
         resetForm(){
             this.form = {
                 id:null, name:'', mobile:'', address:'',
-                bank_account:'', routing_no:'', bank_name:'', territories: []
+                bank_account:'', routing_no:'', bank_name:'', territories: [],
+                is_national: false
             };
+            this.showTerritoryDropdown = false;
+            this.territorySearch = '';
+        },
+
+        toggleTerritoryDropdown() {
+            this.showTerritoryDropdown = !this.showTerritoryDropdown;
+            this.territorySearch = '';
+        },
+
+        isTerritorySelected(territory) {
+            return this.form.territories.some(t => t.TTYCode === territory.TTYCode);
+        },
+
+        toggleTerritory(territory) {
+            const idx = this.form.territories.findIndex(t => t.TTYCode === territory.TTYCode);
+            if (idx >= 0) {
+                this.form.territories.splice(idx, 1);
+            } else {
+                this.form.territories.push(territory);
+            }
+        },
+
+        removeTerritory(index) {
+            this.form.territories.splice(index, 1);
+        },
+
+        onNationalChange() {
+            if (this.form.is_national) {
+                this.form.territories = [];
+                this.showTerritoryDropdown = false;
+            }
+        },
+
+        closeTerritoryDropdown(e) {
+            if (this.$refs.modal && !e.target.closest('.territory-selector')) {
+                this.showTerritoryDropdown = false;
+            }
         },
     }
 };
 </script>
 
-<style src="vue-multiselect/dist/vue-multiselect.min.css"></style>
+<style>
+/* Unscoped: ensure territory dropdown is visible inside Bootstrap modal */
+.bd-example-modal-lg .modal-body {
+    overflow: visible !important;
+}
+.bd-example-modal-lg .modal-content {
+    overflow: visible !important;
+}
+</style>
 <style scoped>
 /* Loader */
 .modern-loader {
@@ -622,7 +697,7 @@ import Multiselect from "vue-multiselect";
 .modern-modal {
     border: none;
     border-radius: 12px;
-    overflow: hidden;
+    overflow: visible;
     box-shadow: 0 8px 30px rgba(0,0,0,0.15);
 }
 .modern-modal-header {
@@ -630,6 +705,7 @@ import Multiselect from "vue-multiselect";
     color: #fff;
     border: none;
     padding: 16px 20px;
+    border-radius: 12px 12px 0 0;
 }
 .modal-title-wrap {
     display: flex;
@@ -659,6 +735,7 @@ import Multiselect from "vue-multiselect";
 /* Modal Body */
 .modern-modal-body {
     padding: 24px 20px;
+    overflow: visible;
 }
 .modern-form-group {
     margin-bottom: 16px;
@@ -746,24 +823,139 @@ import Multiselect from "vue-multiselect";
     color: #fff;
 }
 
-/* Multiselect Override */
-.modern-form-group >>> .multiselect__tags {
-    border-radius: 8px;
+/* Territory Selector */
+.territory-selector {
+    position: relative;
+}
+.territory-selector.disabled {
+    opacity: 0.7;
+}
+.territory-selected-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 40px;
+    padding: 6px 12px;
     border: 1px solid #dee2e6;
+    border-radius: 8px;
+    cursor: pointer;
+    background: #fff;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+.territory-selected-box:hover {
+    border-color: #4a90d9;
+}
+.territory-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    flex: 1;
+}
+.territory-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: linear-gradient(135deg, #4a90d9, #357abd);
+    color: #fff;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 500;
+}
+.territory-tag-remove {
+    cursor: pointer;
+    font-size: 10px;
+    opacity: 0.8;
+    margin-left: 2px;
+}
+.territory-tag-remove:hover {
+    opacity: 1;
+}
+.territory-placeholder {
+    color: #adb5bd;
     font-size: 13px;
 }
-.modern-form-group >>> .multiselect__tags:focus-within {
-    border-color: #4a90d9;
-    box-shadow: 0 0 0 3px rgba(74,144,217,0.15);
+.territory-all-label {
+    color: #6c5ce7;
+    font-size: 13px;
+    font-weight: 500;
 }
-.modern-form-group >>> .multiselect__tag {
-    background: #4a90d9;
-    border-radius: 6px;
+.territory-all-label i {
+    margin-right: 4px;
+    color: #6c5ce7 !important;
 }
-.modern-form-group >>> .multiselect__tag-icon:hover {
-    background: #357abd;
+.territory-arrow {
+    font-size: 11px;
+    color: #adb5bd;
+    transition: transform 0.2s;
+    margin-left: 8px;
+    flex-shrink: 0;
 }
-.modern-form-group >>> .multiselect__option--highlight {
-    background: #4a90d9;
+.territory-arrow.rotate {
+    transform: rotate(180deg);
+}
+.territory-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+    max-height: 220px;
+    display: flex;
+    flex-direction: column;
+}
+.territory-search {
+    width: 100%;
+    border: none;
+    border-bottom: 1px solid #e9ecef;
+    padding: 8px 12px;
+    font-size: 12px;
+    outline: none;
+}
+.territory-search:focus {
+    background: #f8f9fa;
+}
+.territory-options {
+    overflow-y: auto;
+    max-height: 180px;
+}
+.territory-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 400 !important;
+    color: #495057 !important;
+    margin-bottom: 0 !important;
+    transition: background 0.15s;
+}
+.territory-option:hover {
+    background: #f0f4ff;
+}
+.territory-option.selected {
+    background: #e8f0fe;
+    font-weight: 500 !important;
+    color: #2c3e50 !important;
+}
+.territory-option input[type="checkbox"] {
+    width: 15px;
+    height: 15px;
+    accent-color: #4a90d9;
+    flex-shrink: 0;
+}
+.territory-no-result {
+    padding: 12px;
+    text-align: center;
+    color: #adb5bd;
+    font-size: 12px;
 }
 </style>

@@ -97,6 +97,7 @@
                     <th>Territory</th>
                     <th>Bank Acc No</th>
                     <th>Routing No</th>
+                    <th>Bank Name</th>
                     <th>Total Services</th>
                     <th>Total Service Charge</th>
                     <th>Total Service Cost</th>
@@ -114,6 +115,7 @@
                       <td>{{ item.TTYName }}</td>
                       <td>{{ item.BankAccNo }}</td>
                       <td>{{ item.RoutingNo }}</td>
+                      <td>{{ item.BankName }}</td>
                       <td class="td-number">
                         <span class="count-badge">{{ item.TotalServices }}</span>
                       </td>
@@ -134,7 +136,7 @@
                   </template>
                   <template v-else>
                     <tr>
-                      <td colspan="12" class="td-empty">
+                      <td colspan="13" class="td-empty">
                         <i class="fas fa-chart-bar"></i>
                         <p>No records found</p>
                       </td>
@@ -143,7 +145,7 @@
                 </tbody>
                 <tfoot v-if="data.length > 0">
                   <tr class="total-row">
-                    <td colspan="6" class="td-total-label">Grand Total</td>
+                    <td colspan="7" class="td-total-label">Grand Total</td>
                     <td class="td-total-value">{{ grandTotalServices }}</td>
                     <td class="td-total-value">{{ grandTotalCharge }}</td>
                     <td class="td-total-value">{{ grandTotalCost }}</td>
@@ -191,6 +193,7 @@ export default {
         'Territory': 'TTYName',
         'Bank Acc No': 'BankAccNo',
         'Routing No': 'RoutingNo',
+        'Bank Name': 'BankName',
         'Total Services': 'TotalServices',
         'Total Service Charge': 'TotalServiceCharge',
         'Total Service Cost': 'TotalServiceCost',
@@ -260,8 +263,14 @@ export default {
       const dateRange = fromDate.format('DD MMM YYYY') + ' to ' + toDate.format('DD MMM YYYY');
 
       let businessLabel = 'All';
-      if (this.formData.business === 'K') businessLabel = 'ACI K-Pump';
-      else if (this.formData.business === 'L') businessLabel = 'ACI Smart Tools';
+      let printTitle = 'Tools Service Bill';
+      if (this.formData.business === 'K') {
+        businessLabel = 'ACI K-Pump';
+        printTitle = 'K-Pump Service Bill';
+      } else if (this.formData.business === 'L') {
+        businessLabel = 'ACI Smart Tools';
+        printTitle = 'Smart Tools Service Bill';
+      }
 
       const grandTotal = rows.reduce((sum, r) => sum + (parseFloat(r.TotalServiceCost) || 0), 0);
 
@@ -356,6 +365,32 @@ export default {
               padding: 8px 6px;
               border: 1px solid #1a1a2e;
             }
+            .signature-section {
+              display: flex;
+              justify-content: space-between;
+              margin-top: 60px;
+              padding: 0 10px;
+            }
+            .signature-box {
+              text-align: center;
+              min-width: 180px;
+            }
+            .signature-line {
+              border-top: 1.5px solid #333;
+              margin-bottom: 6px;
+              width: 100%;
+            }
+            .signature-title {
+              font-size: 12px;
+              font-weight: 700;
+              color: #1a1a2e;
+              margin-bottom: 2px;
+            }
+            .signature-designation {
+              font-size: 10.5px;
+              color: #555;
+              font-weight: 500;
+            }
             .footer {
               margin-top: 30px;
               display: flex;
@@ -374,7 +409,7 @@ export default {
         <body>
           <div class="header">
             <h1>ACI Motors LTD</h1>
-            <h2>Tools Service Bill</h2>
+            <h2>${printTitle}</h2>
           </div>
           <div class="meta-row">
             <span>Month: ${monthYear}</span>
@@ -401,6 +436,23 @@ export default {
               </tr>
             </tbody>
           </table>
+          <div class="signature-section">
+            <div class="signature-box">
+              <div class="signature-line"></div>
+              <div class="signature-title">Prepared By</div>
+              <div class="signature-designation">AM, Service</div>
+            </div>
+            <div class="signature-box">
+              <div class="signature-line"></div>
+              <div class="signature-title">Recommended By</div>
+              <div class="signature-designation">GM, Marketing</div>
+            </div>
+            <div class="signature-box">
+              <div class="signature-line"></div>
+              <div class="signature-title">Approved By</div>
+              <div class="signature-designation">CBO-Motors</div>
+            </div>
+          </div>
           <div class="footer">
             <span>Generated on: ${moment().format('DD MMM YYYY, h:mm A')}</span>
             <span>ACI Motors LTD - Service Management System</span>
@@ -601,7 +653,7 @@ export default {
 .modern-table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 1100px;
+  min-width: 1200px;
 }
 .modern-table thead th {
   background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);

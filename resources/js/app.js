@@ -6,7 +6,6 @@ window.toastr = require('toastr');
 Vue.use(VueToastr2)
 
 const moment = require('vue-moment');
-require('moment/locale/es');
 Vue.use(require('vue-moment'),{
     moment
 })
