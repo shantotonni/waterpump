@@ -38,12 +38,13 @@ class ReportController extends Controller
         $fromDate = $request->input('fromDate');
         $toDate = $request->input('toDate');
         $serviceTime = $request->input('serviceTime');
+        $business = $request->input('business');
         try {
             return response()->json([
                 'status' => true,
-                'serviceMaster' => $this->getServiceMaster($columns, $length, $column, $dir, $searchValue, $draw, $fromDate, $toDate, $serviceTime)
+                'serviceMaster' => $this->getServiceMaster($columns, $length, $column, $dir, $searchValue, $draw, $fromDate, $toDate, $serviceTime, $business)
             ], 200)->header('Content-Type', 'application/json');
-        } catch (NotFoundHttpException $e) {
+        } catch (\Exception $e) {
             return response()->json(['status' => false, 'message' => 'Nothing found', 'error' => $e], Response::HTTP_NOT_FOUND)
                 ->header('Content-Type', 'application/json');
         }
@@ -194,7 +195,6 @@ class ReportController extends Controller
             ], 200)->header('Content-Type', 'application/json');
 
         } catch (\Exception $e) {
-            return $e;
             return response()->json([
                 'status' => false,
                 'message' => $e->getMessage()
@@ -369,82 +369,94 @@ class ReportController extends Controller
             return response()->json(['status' => false, 'message' => 'Nothing found', 'error' => $e], Response::HTTP_NOT_FOUND)
                 ->header('Content-Type', 'application/json');
         }
-
     }
 
-    // public function serviceDetails(Request $request){
-    //     // return $request->input('id');
-    //     $serviceMasterId = $request->serviceMasterId;
-    //     try {
-    //         return response()->json([
-    //             'status' => true,
-    //             'serviceDetails' => $this->getServiceDetails($serviceMasterId),
-    //         ], 200)->header('Content-Type', 'application/json');
-    //     } catch (NotFoundHttpException $e) {
-    //         return response()->json(['status' => false, 'message' => 'Nothing found', 'error' => $e], Response::HTTP_NOT_FOUND)
-    //             ->header('Content-Type', 'application/json');
-    //     }
-    // }
-
-    public function getServiceMaster($columns, $length, $column, $dir, $searchValue, $draw, $fromDate, $toDate, $serviceTime){
-
+    public function getServiceMaster($columns, $length, $column, $dir, $searchValue, $draw, $fromDate, $toDate, $serviceTime, $business = '')
+    {
         $query = Report::leftJoin('ViewDistrict AS D', 'D.DistrictCode', '=', 'ServiceMaster.DistrictCode')
             ->join('users AS U', 'U.staffid', '=', 'ServiceMaster.StaffID')
             ->join('Territory AS T', 'T.TTYCode', '=', 'ServiceMaster.TerritoryCode')
             ->join('Model AS M', 'M.BrandCode', '=', 'ServiceMaster.ModelCode')
-            ->leftjoin('PointDetails AS P', 'P.ServiceMasterID', '=', 'ServiceMaster.ServiceMasterID')
-//            ->where('ServiceMaster.IsOTPVerified',1)
-            ->select('ServiceMaster.ServiceMasterID','ServiceMaster.Remarks','ServiceMaster.StaffID','ServiceMaster.CustomerName','ServiceMaster.Address','ServiceMaster.Mobile',
-                'ServiceMaster.DistrictCode','ServiceMaster.TerritoryCode','ServiceMaster.ModelCode','ServiceMaster.PurchaseDate','ServiceMaster.ServiceTime','ServiceMaster.ActionTaken',
-                'ServiceMaster.AttendDate','ServiceMaster.ServiceCharge','ServiceMaster.MRNo','ServiceMaster.Status','ServiceMaster.WarrantyCardNo','ServiceMaster.EntryBy',
-                'ServiceMaster.EntryDate','T.TTYCode','T.TTYName','M.BrandCode','M.Brandname','U.username AS StaffName','D.DistrictName',DB::raw('ISNULL(P.Point,0) AS Point'),'P.Feedback')
-//                      ->select('ServiceMaster.ServiceMasterID','ServiceMaster.Remarks','ServiceMaster.StaffID','ServiceMaster.CustomerName','ServiceMaster.Address',
-//                                DB::raw('RIGHT([ServiceMaster].[Mobile],11) AS Mobile'),'ServiceMaster.DistrictCode','ServiceMaster.TerritoryCode','ServiceMaster.ModelCode',
-//                                DB::raw('CONVERT(VARCHAR(23), ServiceMaster.PurchaseDate, 103) AS PurchaseDate'),'ServiceMaster.ServiceTime','ServiceMaster.ActionTaken',
-//                                DB::raw('CONVERT(VARCHAR(23), ServiceMaster.AttendDate, 103) AS AttendDate'),
-//                                DB::raw('CAST(ServiceMaster.ServiceCharge AS decimal(10,2)) AS ServiceCharge'),
-//                                DB::raw('CONVERT(VARCHAR(100), ServiceMaster.MRNo) AS MRNo'),'ServiceMaster.Status',
-//                                DB::raw('CONVERT(VARCHAR(100), ServiceMaster.WarrantyCardNo) AS WarrantyCardNo'),'ServiceMaster.EntryBy',
-//                                DB::raw("CONVERT(VARCHAR(23), ServiceMaster.EntryDate, 103) +' '+ CONVERT(VARCHAR(23), ServiceMaster.EntryDate, 114) EntryDate"), 'T.TTYCode', 'T.TTYName', 'M.BrandCode', 'M.Brandname', 'U.username AS StaffName', 'D.DistrictName',
-//                                DB::raw('ISNULL(P.Point,0) AS Point'),'P.Feedback')
-                        ->groupByRaw('[ServiceMaster].[ServiceMasterID],[ServiceMaster].[Remarks],[ServiceMaster].[StaffID],[ServiceMaster].[CustomerName],[ServiceMaster].[Address],[ServiceMaster].[Mobile],
-                                        [ServiceMaster].[DistrictCode], [ServiceMaster].[TerritoryCode], [ServiceMaster].[ModelCode],[ServiceMaster].[PurchaseDate],[ServiceMaster].[ServiceTime],
-                                        [ServiceMaster].[ActionTaken], [ServiceMaster].[AttendDate],[ServiceMaster].[ServiceCharge],[ServiceMaster].[MRNo],[ServiceMaster].[Status],
-                                        [ServiceMaster].[WarrantyCardNo],[ServiceMaster].[EntryBy],[ServiceMaster].[EntryDate],[T].[TTYCode],[T].[TTYName], [M].[BrandCode],[M].[Brandname],
-                                        [U].[username],[D].[DistrictName],[P].[Point], [P].[Feedback]')
-            ->orderBy('ServiceMaster.'.$columns[$column], $dir);
+            ->leftJoin('PointDetails AS P', 'P.ServiceMasterID', '=', 'ServiceMaster.ServiceMasterID')
+            ->select(
+                'ServiceMaster.ServiceMasterID',
+                'ServiceMaster.Remarks',
+                'ServiceMaster.StaffID',
+                'ServiceMaster.CustomerName',
+                'ServiceMaster.Address',
+                'ServiceMaster.Mobile',
+                'ServiceMaster.DistrictCode',
+                'ServiceMaster.TerritoryCode',
+                'ServiceMaster.ModelCode',
+                'ServiceMaster.PurchaseDate',
+                'ServiceMaster.ServiceTime',
+                'ServiceMaster.ActionTaken',
+                'ServiceMaster.AttendDate',
+                'ServiceMaster.ServiceCharge',
+                'ServiceMaster.MRNo',
+                'ServiceMaster.Status',
+                'ServiceMaster.WarrantyCardNo',
+                'ServiceMaster.EntryBy',
+                'ServiceMaster.EntryDate',
+                'ServiceMaster.Business',
+                'T.TTYCode',
+                'T.TTYName',
+                'M.BrandCode',
+                'M.Brandname',
+                'U.username AS StaffName',
+                'D.DistrictName',
+                DB::raw('ISNULL(P.Point, 0) AS Point'),
+                'P.Feedback',
+            )
+            ->groupByRaw('
+                [ServiceMaster].[ServiceMasterID], [ServiceMaster].[Remarks],
+                [ServiceMaster].[StaffID], [ServiceMaster].[CustomerName],
+                [ServiceMaster].[Address], [ServiceMaster].[Mobile],
+                [ServiceMaster].[DistrictCode], [ServiceMaster].[TerritoryCode],
+                [ServiceMaster].[ModelCode], [ServiceMaster].[PurchaseDate],
+                [ServiceMaster].[ServiceTime], [ServiceMaster].[ActionTaken],
+                [ServiceMaster].[AttendDate], [ServiceMaster].[ServiceCharge],
+                [ServiceMaster].[MRNo], [ServiceMaster].[Status],
+                [ServiceMaster].[WarrantyCardNo], [ServiceMaster].[EntryBy],
+                [ServiceMaster].[EntryDate], [ServiceMaster].[Business],
+                [T].[TTYCode], [T].[TTYName],
+                [M].[BrandCode], [M].[Brandname],
+                [U].[username],
+                [D].[DistrictName],
+                [P].[Point], [P].[Feedback]
+            ')
+            ->orderBy('ServiceMaster.' . $columns[$column], $dir);
 
-        if($searchValue){
-            $query->where(function($query) use ($searchValue){
-                $query->where('ServiceMaster.StaffID', 'like', '%'.$searchValue.'%')
-                    ->orWhere('U.username', 'like', '%'.$searchValue.'%')
-                    ->orWhere('D.DistrictName', 'like', '%'.$searchValue.'%')
-                    ->orWhere('ServiceMaster.MRNo', 'like', '%'.$searchValue.'%')
-                    ->orWhere('ServiceMaster.CustomerName', 'like', '%'.$searchValue.'%')
-                    ->orWhere('T.TTYName', 'like', '%'.$searchValue.'%')
-                    ->orWhere('ServiceMaster.ServiceTime', 'like', '%'.$searchValue.'%');
+        if ($searchValue) {
+            $query->where(function ($query) use ($searchValue) {
+                $query->where('ServiceMaster.StaffID', 'like', '%' . $searchValue . '%')
+                    ->orWhere('U.username', 'like', '%' . $searchValue . '%')
+                    ->orWhere('D.DistrictName', 'like', '%' . $searchValue . '%')
+                    ->orWhere('ServiceMaster.MRNo', 'like', '%' . $searchValue . '%')
+                    ->orWhere('ServiceMaster.CustomerName', 'like', '%' . $searchValue . '%')
+                    ->orWhere('T.TTYName', 'like', '%' . $searchValue . '%')
+                    ->orWhere('ServiceMaster.ServiceTime', 'like', '%' . $searchValue . '%');
             });
         }
 
-        if($fromDate && $toDate){
+        if ($fromDate && $toDate) {
             $query->whereBetween(DB::raw('CONVERT(date, ServiceMaster.EntryDate)'), [$fromDate, $toDate]);
         }
 
-        if(!empty($serviceTime)){
+        if (!empty($serviceTime)) {
             $query->where('ServiceMaster.ServiceTime', '=', $serviceTime);
         }
-        // return $query;
+
+        if (!empty($business)) {
+            $query->where('ServiceMaster.Business', '=', $business);
+        }
+
         $allServices = $query->paginate(10);
 
-        // dd(DB::getQueryLog()); // Show results of log
-
-        return ['data'=>$allServices, 'draw'=>$draw];
-
+        return ['data' => $allServices, 'draw' => $draw];
     }
 
     public function getSelfService($columns, $length, $column, $dir, $searchValue, $draw, $fromDate, $toDate, $serviceTime){
-
-        // DB::enableQueryLog(); // Enable query log
 
         $query = Report::leftJoin('ViewDistrict AS D', 'D.DistrictCode', '=', 'ServiceMaster.DistrictCode')
             ->join('users AS U', 'U.staffid', '=', 'ServiceMaster.StaffID')
@@ -452,10 +464,6 @@ class ReportController extends Controller
             ->join('Model AS M', 'M.BrandCode', '=', 'ServiceMaster.ModelCode')
             ->leftjoin('PointDetails AS P', 'P.ServiceMasterID', '=', 'ServiceMaster.ServiceMasterID')
             ->join('SelfService','SelfService.ServiceMasterID','ServiceMaster.ServiceMasterID')
-//            ->select('ServiceMaster.ServiceMasterID','ServiceMaster.Remarks','ServiceMaster.StaffID','ServiceMaster.CustomerName','ServiceMaster.Address','ServiceMaster.Mobile',
-//                'ServiceMaster.DistrictCode','ServiceMaster.TerritoryCode','ServiceMaster.ModelCode','ServiceMaster.PurchaseDate','ServiceMaster.ServiceTime','ServiceMaster.ActionTaken',
-//                'ServiceMaster.AttendDate','ServiceMaster.ServiceCharge','ServiceMaster.MRNo','ServiceMaster.Status','ServiceMaster.WarrantyCardNo','ServiceMaster.EntryBy',
-//                'ServiceMaster.EntryDate','T.TTYCode','T.TTYName','M.BrandCode','M.Brandname','U.username AS StaffName','D.DistrictName',DB::raw('ISNULL(P.Point,0) AS Point'),'P.Feedback')
             ->select('ServiceMaster.ServiceMasterID','ServiceMaster.Remarks','ServiceMaster.StaffID','ServiceMaster.CustomerName','ServiceMaster.Address',
                 DB::raw('RIGHT([ServiceMaster].[Mobile],11) AS Mobile'),'ServiceMaster.DistrictCode','ServiceMaster.TerritoryCode','ServiceMaster.ModelCode',
                 DB::raw('CONVERT(VARCHAR(23), ServiceMaster.PurchaseDate, 103) AS PurchaseDate'),'ServiceMaster.ServiceTime','ServiceMaster.ActionTaken',
@@ -465,11 +473,6 @@ class ReportController extends Controller
                 DB::raw('CONVERT(VARCHAR(100), ServiceMaster.WarrantyCardNo) AS WarrantyCardNo'),'ServiceMaster.EntryBy',
                 DB::raw("CONVERT(VARCHAR(23), ServiceMaster.EntryDate, 103) +' '+ CONVERT(VARCHAR(23), ServiceMaster.EntryDate, 114) EntryDate"), 'T.TTYCode', 'T.TTYName', 'M.BrandCode', 'M.Brandname', 'U.username AS StaffName', 'D.DistrictName',
                 DB::raw('ISNULL(P.Point,0) AS Point'),'P.Feedback','SelfService.TotalCost as SelfTotalCost')
-//            ->groupByRaw('[ServiceMaster].[ServiceMasterID],[ServiceMaster].[Remarks],[ServiceMaster].[StaffID],[ServiceMaster].[CustomerName],[ServiceMaster].[Address],[ServiceMaster].[Mobile],
-//                                        [ServiceMaster].[DistrictCode], [ServiceMaster].[TerritoryCode], [ServiceMaster].[ModelCode],[ServiceMaster].[PurchaseDate],[ServiceMaster].[ServiceTime],
-//                                        [ServiceMaster].[ActionTaken], [ServiceMaster].[AttendDate],[ServiceMaster].[ServiceCharge],[ServiceMaster].[MRNo],[ServiceMaster].[Status],
-//                                        [ServiceMaster].[WarrantyCardNo],[ServiceMaster].[EntryBy],[ServiceMaster].[EntryDate],[T].[TTYCode],[T].[TTYName], [M].[BrandCode],[M].[Brandname],
-//                                        [U].[username],[D].[DistrictName],[P].[Point], [P].[Feedback]')
             ->orderBy('ServiceMaster.'.$columns[$column], $dir);
         if($searchValue){
             $query->where(function($query) use ($searchValue){
@@ -555,10 +558,6 @@ class ReportController extends Controller
             ->join('Model AS M', 'M.BrandCode', '=', 'ServiceMaster.ModelCode')
             ->leftjoin('PointDetails AS P', 'P.ServiceMasterID', '=', 'ServiceMaster.ServiceMasterID')
             ->join('OutsourceService','OutsourceService.ServiceMasterID','ServiceMaster.ServiceMasterID')
-//            ->select('ServiceMaster.ServiceMasterID','ServiceMaster.Remarks','ServiceMaster.StaffID','ServiceMaster.CustomerName','ServiceMaster.Address','ServiceMaster.Mobile',
-//                'ServiceMaster.DistrictCode','ServiceMaster.TerritoryCode','ServiceMaster.ModelCode','ServiceMaster.PurchaseDate','ServiceMaster.ServiceTime','ServiceMaster.ActionTaken',
-//                'ServiceMaster.AttendDate','ServiceMaster.ServiceCharge','ServiceMaster.MRNo','ServiceMaster.Status','ServiceMaster.WarrantyCardNo','ServiceMaster.EntryBy',
-//                'ServiceMaster.EntryDate','T.TTYCode','T.TTYName','M.BrandCode','M.Brandname','U.username AS StaffName','D.DistrictName',DB::raw('ISNULL(P.Point,0) AS Point'),'P.Feedback')
             ->select('ServiceMaster.ServiceMasterID','ServiceMaster.Remarks','ServiceMaster.StaffID','ServiceMaster.CustomerName','ServiceMaster.Address',
                 DB::raw('RIGHT([ServiceMaster].[Mobile],11) AS Mobile'),'ServiceMaster.DistrictCode','ServiceMaster.TerritoryCode','ServiceMaster.ModelCode',
                 DB::raw('CONVERT(VARCHAR(50), ServiceMaster.PurchaseDate, 103) AS PurchaseDate'),'ServiceMaster.ServiceTime','ServiceMaster.ActionTaken',
@@ -569,11 +568,6 @@ class ReportController extends Controller
                 DB::raw("CONVERT(VARCHAR(50), ServiceMaster.EntryDate, 103) +' '+ CONVERT(VARCHAR(50), ServiceMaster.EntryDate, 114) EntryDate"), 'T.TTYCode', 'T.TTYName', 'M.BrandCode', 'M.Brandname', 'U.username AS StaffName', 'D.DistrictName',
                 DB::raw('ISNULL(P.Point,0) AS Point'),
                 'P.Feedback','OutsourceService.TotalCost as OutsourceTotalCost','OutsourceService.TechnicianName','OutsourceService.TechnicianMobile','OutsourceService.TechnicianAddress')
-//            ->groupByRaw('[ServiceMaster].[ServiceMasterID],[ServiceMaster].[Remarks],[ServiceMaster].[StaffID],[ServiceMaster].[CustomerName],[ServiceMaster].[Address],[ServiceMaster].[Mobile],
-//                                        [ServiceMaster].[DistrictCode], [ServiceMaster].[TerritoryCode], [ServiceMaster].[ModelCode],[ServiceMaster].[PurchaseDate],[ServiceMaster].[ServiceTime],
-//                                        [ServiceMaster].[ActionTaken], [ServiceMaster].[AttendDate],[ServiceMaster].[ServiceCharge],[ServiceMaster].[MRNo],[ServiceMaster].[Status],
-//                                        [ServiceMaster].[WarrantyCardNo],[ServiceMaster].[EntryBy],[ServiceMaster].[EntryDate],[T].[TTYCode],[T].[TTYName], [M].[BrandCode],[M].[Brandname],
-//                                        [U].[username],[D].[DistrictName],[P].[Point], [P].[Feedback]')
             ->orderBy('ServiceMaster.'.$columns[$column], $dir);
         if($searchValue){
             $query->where(function($query) use ($searchValue){
@@ -757,6 +751,7 @@ class ReportController extends Controller
         //$carbon_to_date = Carbon::createFromFormat('Y-m-d H:i:s', $toDate.' 59:59:00')->toDateTimeString();
 
         $serviceTime = $request->input('serviceTime');
+        $business = $request->input('business');
         $query = Report::leftJoin('ViewDistrict AS D', 'D.DistrictCode', '=', 'ServiceMaster.DistrictCode')
                         ->join('users AS U', 'U.staffid', '=', 'ServiceMaster.StaffID')
                         ->join('Territory AS T', 'T.TTYCode', '=', 'ServiceMaster.TerritoryCode')
@@ -774,11 +769,12 @@ class ReportController extends Controller
                                 DB::raw('CONVERT(VARCHAR(100), ServiceMaster.MRNo) AS MRNo'),'ServiceMaster.Status',
                                 DB::raw('CONVERT(VARCHAR(100), ServiceMaster.WarrantyCardNo) AS WarrantyCardNo'),'ServiceMaster.EntryBy',
                                 DB::raw("CONVERT(VARCHAR(23), ServiceMaster.EntryDate, 103) +' '+ CONVERT(VARCHAR(23), ServiceMaster.EntryDate, 114) EntryDate"), 'T.TTYCode', 'T.TTYName', 'M.BrandCode', 'M.Brandname', 'U.username AS StaffName', 'D.DistrictName',
-                                DB::raw('ISNULL(P.Point,0) AS Point'),'P.Feedback')
+                                DB::raw('ISNULL(P.Point,0) AS Point'),'P.Feedback',
+                                'ServiceMaster.Business')
                         ->groupByRaw('[ServiceMaster].[ServiceMasterID],[ServiceMaster].[Remarks],[ServiceMaster].[StaffID],[ServiceMaster].[CustomerName],[ServiceMaster].[Address],[ServiceMaster].[Mobile],
                                         [ServiceMaster].[DistrictCode], [ServiceMaster].[TerritoryCode], [ServiceMaster].[ModelCode],[ServiceMaster].[PurchaseDate],[ServiceMaster].[ServiceTime],
                                         [ServiceMaster].[ActionTaken], [ServiceMaster].[AttendDate],[ServiceMaster].[ServiceCharge],[ServiceMaster].[MRNo],[ServiceMaster].[Status],
-                                        [ServiceMaster].[WarrantyCardNo],[ServiceMaster].[EntryBy],[ServiceMaster].[EntryDate],[T].[TTYCode],[T].[TTYName], [M].[BrandCode],[M].[Brandname],
+                                        [ServiceMaster].[WarrantyCardNo],[ServiceMaster].[EntryBy],[ServiceMaster].[EntryDate],[ServiceMaster].[Business],[T].[TTYCode],[T].[TTYName], [M].[BrandCode],[M].[Brandname],
                                         [U].[username],[D].[DistrictName],[P].[Point], [P].[Feedback]')
                         ->orderBy('ServiceMaster.ServiceMasterID','desc');
 
@@ -790,6 +786,10 @@ class ReportController extends Controller
 
         if(!empty($serviceTime)){
             $query->where('ServiceMaster.ServiceTime', '=', $serviceTime);
+        }
+
+        if(!empty($business)){
+            $query->where('ServiceMaster.Business', '=', $business);
         }
 
         $serviceData = $query
@@ -974,6 +974,44 @@ class ReportController extends Controller
         return response()->json($dailySparePartsReportData);
         // return Excel::download($serviceData, 'servicelist.xlsx');
 
+    }
+
+    public function updateOutsourceServiceTotalCost(Request $request)
+    {
+        $request->validate([
+            'serviceMasterId' => 'required',
+            'totalCost' => 'required|numeric|min:0',
+        ]);
+
+        $outsourceService = OutsourceService::where('ServiceMasterID', $request->serviceMasterId)->first();
+
+        if (!$outsourceService) {
+            return response()->json(['status' => false, 'message' => 'Record not found.'], 404);
+        }
+
+        $outsourceService->TotalCost = $request->totalCost;
+        $outsourceService->save();
+
+        return response()->json(['status' => true, 'message' => 'Total cost updated successfully.']);
+    }
+
+    public function updateSelfServiceTotalCost(Request $request)
+    {
+        $request->validate([
+            'serviceMasterId' => 'required',
+            'totalCost' => 'required|numeric|min:0',
+        ]);
+
+        $selfService = SelfService::where('ServiceMasterID', $request->serviceMasterId)->first();
+
+        if (!$selfService) {
+            return response()->json(['status' => false, 'message' => 'Record not found.'], 404);
+        }
+
+        $selfService->TotalCost = $request->totalCost;
+        $selfService->save();
+
+        return response()->json(['status' => true, 'message' => 'Total cost updated successfully.']);
     }
 
     protected function guard()

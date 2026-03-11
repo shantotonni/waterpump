@@ -78,6 +78,8 @@ Route::group(['middleware' => 'api', 'namespace'  => 'App\Http\Controllers', 'pr
         Route::get('splywiseservicecomparison', 'AdminDashboardController@getSplyWiseYearlyServiceChartData');
         Route::get('yearwisecompare', 'AdminDashboardController@yearwisecompare');
         Route::get('servicesummaryreport', 'ReportController@serviceSummaryReport');
+        Route::post('updateSelfServiceTotalCost', 'ReportController@updateSelfServiceTotalCost');
+        Route::post('updateOutsourceServiceTotalCost', 'ReportController@updateOutsourceServiceTotalCost');
     }
 );
 

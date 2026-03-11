@@ -41,6 +41,23 @@ Vue.component('apexchart', VueApexCharts);
 import router from "./router.js";
 import { store } from "./store/store.js";
 
+// Auto-logout on 401 Unauthenticated response
+window.axios.interceptors.response.use(
+    response => response,
+    error => {
+        if (error.response && error.response.status === 401) {
+            store.commit('clearToken');
+            store.commit('clearUserId');
+            store.commit('clearUserType');
+            if (router.currentRoute.name !== 'Login') {
+                router.push({ name: 'Login' });
+                window.toastr.error('Session expired. Please login again.');
+            }
+        }
+        return Promise.reject(error);
+    }
+);
+
 import { Form, HasError, AlertError } from 'vform'
 window.Form = Form;
 Vue.component(HasError.name, HasError)

@@ -17,32 +17,32 @@
         </div>
       </section>
       <section class="content">
-        <div class="text-center" v-if="loader">
-          <div class="spinner-border" role="status">
-            <span class="sr-only"><p style="color:red">Loading...</p></span>
+        <!-- Loader -->
+        <div class="modern-loader" v-if="loader">
+          <div class="spinner-border text-primary" role="status">
+            <span class="sr-only">Loading...</span>
           </div>
+          <p class="mt-2 text-muted">Loading report data...</p>
         </div>
-        <div class="card" v-else>
-          <div class="col-md-12 mb-5"></div>
-          <div class="col-md-12 mb-3">
-            <form class="form-inline">
-              <div class="form-group">
-                <p class="form-control-static">From Date</p>
+
+        <div class="modern-card" v-else>
+          <!-- Filter Section -->
+          <div class="filter-section">
+            <div class="filter-header">
+              <i class="fas fa-sliders-h"></i> Filters
+            </div>
+            <div class="filter-body">
+              <div class="filter-group">
+                <label class="filter-label">From Date</label>
+                <input class="form-control filter-input" type="date" v-model="tableData.fromDate">
               </div>
-              <div class="form-group mx-sm-3">
-                <input class="form-control" type="date" v-model="tableData.fromDate">
+              <div class="filter-group">
+                <label class="filter-label">To Date</label>
+                <input class="form-control filter-input" type="date" v-model="tableData.toDate">
               </div>
-              <div class="form-group">
-                <p class="form-control-static">To Date</p>
-              </div>
-              <div class="form-group mx-sm-3">
-                <input class="form-control" type="date" v-model="tableData.toDate">
-              </div>
-              <div class="form-group">
-                <p class="form-control-static">Service Time</p>
-              </div>
-              <div class="form-group mx-sm-3">
-                <select class="form-control" v-model="tableData.serviceTime">
+              <div class="filter-group">
+                <label class="filter-label">Service Time</label>
+                <select class="form-control filter-input" v-model="tableData.serviceTime">
                   <option value="">All</option>
                   <option value="First">First</option>
                   <option value="Second">Second</option>
@@ -50,84 +50,105 @@
                   <option value="Fourth">Fourth</option>
                 </select>
               </div>
-              <div class="form-group">
-                <button type="submit" @click.prevent="allService()" class="btn btn-default button-border"><i class="fas fa-filter"></i> Filter</button>
+              <div class="filter-actions">
+                <button @click.prevent="allService()" class="btn btn-filter-apply">
+                  <i class="fas fa-filter"></i> Apply
+                </button>
+                <button @click.prevent="clearFilter()" class="btn btn-filter-clear">
+                  <i class="fas fa-times"></i> Clear
+                </button>
               </div>
-              <div class="form-group mx-sm-3">
-                <button type="submit" @click.prevent="clearFilter()" class="btn btn-default button-border">Clear Filter</button>
-              </div>
-            </form>
+            </div>
           </div>
-          <div class="col-md-12">
-            <div class="input-group">
-              <div class="col-md-8" style="padding-left: 0px;">
-                <button class="btn btn-default button-border" @click.prevent="print"><i class="fas fa-print"></i> Print</button>
-                <a @click.prevent="exportReport">
-                  <export-excel
-                      class   = "btn btn-default button-border"
-                      :data   = "json_data"
-                      :fields = "json_fields"
-                      worksheet = "My Worksheet"
-                      name    = "outsource-summary-report.xls">
-                    Excel
-                  </export-excel>
-                </a>
-                <button class="btn btn-default button-border" @click.prevent="downloadWarrantyPDF('OutsourceWarrantyCardImage')">
-                  <i class="fas fa-print"></i> Download Warranty Cards
-                </button>
-                <button class="btn btn-default button-border" @click.prevent="downloadWarrantyPDF('OutsourceBillImage')">
-                  <i class="fas fa-print"></i> Download Bill Images
-                </button>
-                <!-- <button class="btn btn-default button-border" @click.prevent="exportToPDF">PDF</button> -->
-              </div>
 
-              <div class="col-md-4 input-group mb-3" style="padding-right: 0px;">
-                <div class="input-group-prepend">
-                  <span class="input-group-text" id="basic-addon1">Search</span>
-                </div>
-                <input class="form-control" type="text" v-model="tableData.search" @input="allService()">
-              </div>
+          <!-- Toolbar Section -->
+          <div class="toolbar-section">
+            <div class="toolbar-left">
+              <button class="btn btn-tool" @click.prevent="print">
+                <i class="fas fa-print"></i> Print
+              </button>
+              <a @click.prevent="exportReport">
+                <export-excel
+                    class="btn btn-tool btn-tool-excel"
+                    :data="json_data"
+                    :fields="json_fields"
+                    worksheet="My Worksheet"
+                    name="outsource-summary-report.xls">
+                  <i class="fas fa-file-excel"></i> Excel
+                </export-excel>
+              </a>
+              <button class="btn btn-tool" @click.prevent="downloadWarrantyPDF('OutsourceWarrantyCardImage')">
+                <i class="fas fa-id-card"></i> Warranty Cards
+              </button>
+              <button class="btn btn-tool" @click.prevent="downloadWarrantyPDF('OutsourceBillImage')">
+                <i class="fas fa-file-image"></i> Bill Images
+              </button>
             </div>
-            <div ref="document">
-              <data-table :columns="columns" :sortKey="sortKey" :sortOrders="sortOrders" @sort="sortBy" id="printMe">
-                <tbody>
-                <tr v-for="providedService in providedServiceList" :key="providedService.ServiceMasterID">
-                  <td>{{providedService.ServiceMasterID}}</td>
-                  <td>{{providedService.StaffID}}</td>
-                  <td>{{providedService.StaffName}}</td>
-                  <td>{{providedService.TTYName}}</td>
-                  <td>{{providedService.CustomerName}}</td>
-                  <td>{{providedService.Mobile}}</td>
-                  <td>{{providedService.Address}}</td>
-                  <td>{{providedService.Brandname}}</td>
-                  <td>{{providedService.PurchaseDate}}</td>
-                  <td>{{providedService.ActionTaken}}</td>
-                  <td>{{providedService.TechnicianName}}</td>
-                  <td>{{providedService.TechnicianAddress}}</td>
-                  <td>{{providedService.TechnicianMobile}}</td>
-                  <td>
-                    <button type="button" class="btn btn-primary" @click="openImage(providedService.ServiceMasterID,'OutsourceWarrantyCardImage')">
-                      View
-                    </button>
-                  </td>
-                  <td>
-                    <button type="button" class="btn btn-primary" @click="openImage(providedService.ServiceMasterID,'OutsourceBillImage')">View</button>
-                  </td>
-                  <td>{{providedService.OutsourceTotalCost}}</td>
-                </tr>
-                </tbody>
-              </data-table>
+            <div class="toolbar-right">
+              <div class="search-box">
+                <i class="fas fa-search search-icon"></i>
+                <input class="form-control search-input" type="text" placeholder="Search..." v-model="tableData.search" @input="allService()">
+              </div>
             </div>
           </div>
-          <div class="col-md-12 input-group mb-3 mt-3">
-            <div class="col-md-6 invisible">
-              <div class="col-md-4 input-group-prepend justify-content-center">
-                <span class="mt-2">Show:</span>&nbsp;<select class="form-control" v-model="tableData.length" @change="allService()">
-                <option v-for="(records, index) in perPage" :key="index" :value="records">{{records}}</option>
-              </select>
-              </div>
+
+          <!-- Table Section -->
+          <div class="table-section" ref="document">
+            <data-table :columns="columns" :sortKey="sortKey" :sortOrders="sortOrders" @sort="sortBy" id="printMe">
+              <tbody>
+              <tr v-for="(providedService, index) in providedServiceList" :key="providedService.ServiceMasterID" :class="{'row-even': index % 2 === 0, 'row-odd': index % 2 !== 0}">
+                <td class="td-id">{{ providedService.ServiceMasterID }}</td>
+                <td>{{ providedService.StaffID }}</td>
+                <td>{{ providedService.StaffName }}</td>
+                <td>{{ providedService.TTYName }}</td>
+                <td class="td-name">{{ providedService.CustomerName }}</td>
+                <td>{{ providedService.Mobile }}</td>
+                <td>{{ providedService.Address }}</td>
+                <td>{{ providedService.Brandname }}</td>
+                <td>{{ providedService.PurchaseDate }}</td>
+                <td>{{ providedService.ActionTaken }}</td>
+                <td class="td-technician">{{ providedService.TechnicianName }}</td>
+                <td>{{ providedService.TechnicianAddress }}</td>
+                <td>{{ providedService.TechnicianMobile }}</td>
+                <td class="td-action">
+                  <button type="button" class="btn btn-view btn-view-wc"
+                          @click="openImage(providedService.ServiceMasterID,'OutsourceWarrantyCardImage')">
+                    <i class="fas fa-eye"></i> View
+                  </button>
+                </td>
+                <td class="td-action">
+                  <button type="button" class="btn btn-view btn-view-bill"
+                          @click="openImage(providedService.ServiceMasterID,'OutsourceBillImage')">
+                    <i class="fas fa-eye"></i> View
+                  </button>
+                </td>
+                <td class="td-cost">
+                  <div class="cost-cell">
+                    <span class="cost-value">{{ providedService.OutsourceTotalCost || 0 }}</span>
+                    <button type="button" class="btn btn-edit-cost" @click="openTotalCostModal(providedService)" title="Edit Total Cost">
+                      <i class="fas fa-pen"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr v-if="providedServiceList.length === 0">
+                <td colspan="16" class="td-empty">
+                  <i class="fas fa-inbox"></i>
+                  <p>No records found</p>
+                </td>
+              </tr>
+              </tbody>
+            </data-table>
+          </div>
+
+          <!-- Footer Section -->
+          <div class="table-footer">
+            <div class="footer-info">
+              <span class="text-muted" v-if="pagination.from">
+                Showing {{ pagination.from }} to {{ pagination.to }} of {{ pagination.total }} entries
+              </span>
             </div>
-            <div class="col-md-6 d-flex flex-row-reverse">
+            <div class="footer-pagination">
               <pagination :pagination="pagination"
                           @prev="allService(pagination.prevPageUrl)"
                           @next="allService(pagination.nextPageUrl)">
@@ -137,6 +158,54 @@
         </div>
       </section>
     </div>
+
+    <!-- Update Total Cost Modal -->
+    <div class="modal fade" id="outsourceTotalCostModal" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content modern-modal">
+          <div class="modal-header modern-modal-header">
+            <div class="modal-title-wrap">
+              <i class="fas fa-money-bill-wave"></i>
+              <h5 class="modal-title">Update Total Cost</h5>
+            </div>
+            <button type="button" class="close modern-close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body modern-modal-body">
+            <div class="modal-info-row">
+              <div class="info-item">
+                <label><i class="fas fa-hashtag"></i> Service ID</label>
+                <div class="info-value">{{ editTotalCost.serviceMasterId }}</div>
+              </div>
+              <div class="info-item">
+                <label><i class="fas fa-user"></i> Customer</label>
+                <div class="info-value">{{ editTotalCost.customerName }}</div>
+              </div>
+            </div>
+            <div class="form-group modern-form-group">
+              <label><i class="fas fa-coins"></i> Total Cost Amount</label>
+              <div class="input-group modern-input-group">
+                <div class="input-group-prepend">
+                  <span class="input-group-text modern-prepend">BDT</span>
+                </div>
+                <input type="number" class="form-control modern-cost-input" v-model="editTotalCost.totalCost" min="0" step="0.01" placeholder="Enter amount">
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer modern-modal-footer">
+            <button type="button" class="btn btn-modal-cancel" data-dismiss="modal">
+              <i class="fas fa-times"></i> Cancel
+            </button>
+            <button type="button" class="btn btn-modal-save" @click="updateTotalCost" :disabled="updating">
+              <span v-if="updating"><i class="fas fa-spinner fa-spin"></i> Saving...</span>
+              <span v-else><i class="fas fa-check"></i> Save Changes</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <ImageModal/>
   </div>
   <div class="col-md-12 mb-3 mt-3" v-else>Please Login</div>
@@ -190,7 +259,6 @@ export default {
       textXAxis: 30,
       textYAxis: 35,
       providedServiceList: [],
-      //   serviceDetails: [],
       columns:columns,
       sortKey: 'StaffID',
       sortOrders:sortOrders,
@@ -236,7 +304,7 @@ export default {
         'Technician Name': 'TechnicianName',
         'Technician Address': 'TechnicianAddress',
         'Technician Mobile': 'TechnicianMobile',
-        'Total Cost': 'TotalCost',
+        'Total Cost': 'OutsourceTotalCost',
       },
       json_data: [],
       json_meta: [
@@ -247,6 +315,12 @@ export default {
           }
         ]
       ],
+      editTotalCost: {
+        serviceMasterId: '',
+        customerName: '',
+        totalCost: 0
+      },
+      updating: false,
     };
   },
   created(){
@@ -308,10 +382,8 @@ export default {
       const index = this.opened.indexOf(id);
       if (index > -1) {
         this.opened.splice(index, 1)
-        // this.expand = false
       } else {
         this.opened.splice(index, 1)
-
         this.opened.push(id)
         if(id != 0){
           this.masterID.serviceMasterId = id;
@@ -320,7 +392,6 @@ export default {
               .then((response) => {
                 if(response.data.status == true){
                   this.serviceDetails = response.data.serviceDetails;
-                  // this.expand = true
                 }
               })
               .catch((error) => {
@@ -335,12 +406,39 @@ export default {
     clearFilter() {
       this.tableData.fromDate = '';
       this.tableData.toDate = '';
+      this.tableData.serviceTime = '';
       this.allService();
       this.exportReport();
     },
     print () {
-      // Pass the element id here
       this.$htmlToPaper('printMe', null, () => {
+      });
+    },
+    openTotalCostModal(service) {
+      this.editTotalCost.serviceMasterId = service.ServiceMasterID;
+      this.editTotalCost.customerName = service.CustomerName;
+      this.editTotalCost.totalCost = service.OutsourceTotalCost || 0;
+      $('#outsourceTotalCostModal').modal('show');
+    },
+    updateTotalCost() {
+      this.updating = true;
+      axios.post(this.base_url + '/api/admindashboard/updateOutsourceServiceTotalCost', {
+        serviceMasterId: this.editTotalCost.serviceMasterId,
+        totalCost: this.editTotalCost.totalCost
+      }, {token: this.$store.state.token})
+      .then((response) => {
+        this.updating = false;
+        if (response.data.status === true) {
+          this.$toastr.success(response.data.message);
+          $('#outsourceTotalCostModal').modal('hide');
+          this.allService();
+        } else {
+          this.$toastr.error(response.data.message);
+        }
+      })
+      .catch((error) => {
+        this.updating = false;
+        this.$toastr.error('Something went wrong.');
       });
     },
     exportReport(){
@@ -458,7 +556,484 @@ export default {
 </script>
 
 <style scoped>
-.button-border{
-  border-color:#0042ff
+/* ====== Loader ====== */
+.modern-loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 0;
+}
+
+/* ====== Card Container ====== */
+.modern-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  padding: 0;
+  overflow: hidden;
+}
+
+/* ====== Filter Section ====== */
+.filter-section {
+  border-bottom: 1px solid #e9ecef;
+}
+.filter-header {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  padding: 10px 20px;
+  font-weight: 600;
+  font-size: 13px;
+  color: #495057;
+  letter-spacing: 0.5px;
+}
+.filter-header i {
+  margin-right: 8px;
+  color: #6c757d;
+}
+.filter-body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 15px;
+  padding: 15px 20px;
+}
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  min-width: 160px;
+}
+.filter-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+.filter-input {
+  border-radius: 6px;
+  border: 1.5px solid #dee2e6;
+  font-size: 13px;
+  padding: 6px 10px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.filter-input:focus {
+  border-color: #4a90d9;
+  box-shadow: 0 0 0 3px rgba(74, 144, 217, 0.15);
+}
+.filter-actions {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+  padding-bottom: 1px;
+}
+.btn-filter-apply {
+  background: linear-gradient(135deg, #4a90d9 0%, #357abd 100%);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 7px 18px;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+.btn-filter-apply:hover {
+  background: linear-gradient(135deg, #357abd 0%, #2868a8 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(53, 122, 189, 0.3);
+  color: #fff;
+}
+.btn-filter-clear {
+  background: #fff;
+  color: #6c757d;
+  border: 1.5px solid #dee2e6;
+  border-radius: 6px;
+  padding: 6px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+.btn-filter-clear:hover {
+  background: #f8f9fa;
+  border-color: #adb5bd;
+  color: #495057;
+}
+
+/* ====== Toolbar Section ====== */
+.toolbar-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 15px 20px;
+  border-bottom: 1px solid #e9ecef;
+}
+.toolbar-left {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.btn-tool {
+  background: #fff;
+  border: 1.5px solid #dee2e6;
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #495057;
+  transition: all 0.2s;
+}
+.btn-tool:hover {
+  background: #f8f9fa;
+  border-color: #4a90d9;
+  color: #4a90d9;
+  transform: translateY(-1px);
+}
+.btn-tool i {
+  margin-right: 5px;
+}
+.btn-tool-excel {
+  background: #fff;
+  border: 1.5px solid #dee2e6;
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #495057;
+  transition: all 0.2s;
+}
+.btn-tool-excel:hover {
+  background: #f8f9fa;
+  border-color: #1d6f42;
+  color: #1d6f42;
+}
+.toolbar-right {
+  min-width: 250px;
+}
+.search-box {
+  position: relative;
+}
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #adb5bd;
+  font-size: 13px;
+  z-index: 2;
+}
+.search-input {
+  padding-left: 36px;
+  border-radius: 20px;
+  border: 1.5px solid #dee2e6;
+  font-size: 13px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.search-input:focus {
+  border-color: #4a90d9;
+  box-shadow: 0 0 0 3px rgba(74, 144, 217, 0.15);
+}
+
+/* ====== Table Section ====== */
+.table-section {
+  padding: 0 20px;
+  overflow-x: auto;
+}
+.table-section >>> .tableFixHead {
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+  overflow: auto;
+  height: auto;
+  max-height: 520px;
+}
+.table-section >>> table {
+  margin-bottom: 0;
+  min-width: 1600px;
+}
+.table-section >>> thead th {
+  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%) !important;
+  color: #fff !important;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 10px 8px;
+  border: none;
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.table-section >>> tbody td {
+  padding: 8px 8px;
+  font-size: 12px;
+  color: #495057;
+  vertical-align: middle;
+  border-color: #f0f0f0;
+  transition: background-color 0.15s;
+}
+.table-section >>> tbody tr:hover td {
+  background-color: #e8f4fd !important;
+}
+.row-even td {
+  background-color: #fff;
+}
+.row-odd td {
+  background-color: #f8f9fb;
+}
+.td-id {
+  font-weight: 600;
+  color: #2c3e50 !important;
+}
+.td-name {
+  font-weight: 500;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.td-technician {
+  font-weight: 500;
+  color: #6c5ce7 !important;
+}
+.td-action {
+  text-align: center;
+}
+.td-cost {
+  text-align: center;
+  min-width: 120px;
+  white-space: nowrap;
+}
+.td-empty {
+  text-align: center;
+  padding: 40px 20px !important;
+  color: #adb5bd;
+}
+.td-empty i {
+  font-size: 32px;
+  display: block;
+  margin-bottom: 8px;
+}
+.td-empty p {
+  margin: 0;
+  font-size: 14px;
+}
+
+/* View Buttons */
+.btn-view {
+  border: none;
+  border-radius: 5px;
+  padding: 4px 12px;
+  font-size: 11px;
+  font-weight: 500;
+  transition: all 0.2s;
+  color: #fff;
+}
+.btn-view i {
+  margin-right: 3px;
+}
+.btn-view-wc {
+  background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%);
+}
+.btn-view-wc:hover {
+  background: linear-gradient(135deg, #5b4cdb 0%, #8c85f0 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(108, 92, 231, 0.3);
+  color: #fff;
+}
+.btn-view-bill {
+  background: linear-gradient(135deg, #00b894 0%, #55efc4 100%);
+}
+.btn-view-bill:hover {
+  background: linear-gradient(135deg, #00a381 0%, #40d4ae 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 184, 148, 0.3);
+  color: #fff;
+}
+
+/* Cost Cell */
+.cost-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.cost-value {
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 13px;
+}
+.btn-edit-cost {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #fd79a8 0%, #e84393 100%);
+  color: #fff;
+  border: none;
+  font-size: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.btn-edit-cost:hover {
+  transform: scale(1.15);
+  box-shadow: 0 2px 8px rgba(232, 67, 147, 0.4);
+  color: #fff;
+}
+
+/* ====== Footer ====== */
+.table-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  border-top: 1px solid #e9ecef;
+  background: #f8f9fa;
+  border-radius: 0 0 12px 12px;
+}
+.footer-info {
+  font-size: 13px;
+}
+
+/* ====== Modal ====== */
+.modern-modal {
+  border: none;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+}
+.modern-modal-header {
+  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+  border: none;
+  padding: 16px 20px;
+}
+.modal-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.modal-title-wrap i {
+  color: #55efc4;
+  font-size: 18px;
+}
+.modern-modal-header .modal-title {
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+}
+.modern-close {
+  color: #fff;
+  opacity: 0.7;
+  text-shadow: none;
+  font-size: 22px;
+}
+.modern-close:hover {
+  opacity: 1;
+  color: #fff;
+}
+.modern-modal-body {
+  padding: 24px 20px;
+}
+.modal-info-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.info-item {
+  flex: 1;
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 12px 14px;
+  border: 1px solid #e9ecef;
+}
+.info-item label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+.info-item label i {
+  margin-right: 4px;
+  color: #adb5bd;
+}
+.info-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+.modern-form-group label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 6px;
+}
+.modern-form-group label i {
+  margin-right: 5px;
+  color: #6c757d;
+}
+.modern-prepend {
+  background: linear-gradient(135deg, #4a90d9 0%, #357abd 100%);
+  color: #fff;
+  border: none;
+  font-weight: 600;
+  font-size: 13px;
+  border-radius: 6px 0 0 6px;
+}
+.modern-cost-input {
+  border-radius: 0 6px 6px 0;
+  border: 1.5px solid #dee2e6;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 10px 14px;
+  color: #2c3e50;
+}
+.modern-cost-input:focus {
+  border-color: #4a90d9;
+  box-shadow: 0 0 0 3px rgba(74, 144, 217, 0.15);
+}
+.modern-modal-footer {
+  border-top: 1px solid #e9ecef;
+  padding: 14px 20px;
+  background: #f8f9fa;
+}
+.btn-modal-cancel {
+  background: #fff;
+  border: 1.5px solid #dee2e6;
+  border-radius: 8px;
+  padding: 8px 20px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #6c757d;
+  transition: all 0.2s;
+}
+.btn-modal-cancel:hover {
+  background: #f1f1f1;
+  border-color: #adb5bd;
+}
+.btn-modal-save {
+  background: linear-gradient(135deg, #4a90d9 0%, #357abd 100%);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 24px;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+.btn-modal-save:hover {
+  background: linear-gradient(135deg, #357abd 0%, #2868a8 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(53, 122, 189, 0.3);
+  color: #fff;
+}
+.btn-modal-save:disabled {
+  opacity: 0.7;
+  transform: none;
+  box-shadow: none;
 }
 </style>
