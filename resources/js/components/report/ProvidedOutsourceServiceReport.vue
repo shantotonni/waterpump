@@ -50,6 +50,14 @@
                   <option value="Fourth">Fourth</option>
                 </select>
               </div>
+              <div class="filter-group">
+                <label class="filter-label">Business</label>
+                <select class="form-control filter-input" v-model="tableData.business">
+                  <option value="">All</option>
+                  <option value="K">K-Pump</option>
+                  <option value="L">L-Tools</option>
+                </select>
+              </div>
               <div class="filter-actions">
                 <button @click.prevent="allService()" class="btn btn-filter-apply">
                   <i class="fas fa-filter"></i> Apply
@@ -107,6 +115,11 @@
                 <td>{{ providedService.Brandname }}</td>
                 <td>{{ providedService.PurchaseDate }}</td>
                 <td>{{ providedService.ActionTaken }}</td>
+                <td>
+                  <span class="badge-business" :class="providedService.Business === 'K' ? 'badge-biz-k' : 'badge-biz-l'">
+                    {{ providedService.Business === 'K' ? 'K-Pump' : providedService.Business === 'L' ? 'L-Tools' : providedService.Business }}
+                  </span>
+                </td>
                 <td class="td-technician">{{ providedService.TechnicianName }}</td>
                 <td>{{ providedService.TechnicianAddress }}</td>
                 <td>{{ providedService.TechnicianMobile }}</td>
@@ -132,7 +145,7 @@
                 </td>
               </tr>
               <tr v-if="providedServiceList.length === 0">
-                <td colspan="16" class="td-empty">
+                <td colspan="17" class="td-empty">
                   <i class="fas fa-inbox"></i>
                   <p>No records found</p>
                 </td>
@@ -229,22 +242,23 @@ export default {
   data:() => {
     let sortOrders = {};
     let columns = [
-      {width: '20%', label:'SL', name:'ServiceMasterID'},
-      {width: '20%', label:'StaffID', name:'StaffID'},
-      {width: '20%', label:'StaffName', name:'UserName'},
-      {width: '20%', label:'Territory', name:'Territory'},
-      {width: '20%', label:'CustomerName', name:'CustomerName'},
-      {width: '20%', label:'CustomerMobile', name:'CustomerMobile'},
-      {width: '20%', label:'Address', name:'Address'},
-      {width: '20%', label:'ModelName', name:'Model'},
-      {width: '20%', label:'PurchaseDate', name:'PurchaseDate'},
-      {width: '20%', label:'ActionTaken', name:'Action'},
-      {width: '20%', label:'TechnicianName', name:'TechnicianName'},
-      {width: '20%', label:'TechnicianAddress', name:'TechnicianAddress'},
-      {width: '20%', label:'TechnicianMobile', name:'TechnicianMobile'},
-      {width: '20%', label: 'WCImage', name: 'WCImage'},
-      {width: '20%', label: 'BillImage', name: 'BillImage'},
-      {width: '20%', label: 'TotalCost', name: 'TotalCost'},
+      {width: '60px', label:'SL', name:'ServiceMasterID'},
+      {width: '80px', label:'StaffID', name:'StaffID'},
+      {width: '120px', label:'StaffName', name:'UserName'},
+      {width: '100px', label:'Territory', name:'Territory'},
+      {width: '130px', label:'CustomerName', name:'CustomerName'},
+      {width: '110px', label:'CustomerMobile', name:'CustomerMobile'},
+      {width: '130px', label:'Address', name:'Address'},
+      {width: '100px', label:'ModelName', name:'Model'},
+      {width: '95px', label:'PurchaseDate', name:'PurchaseDate'},
+      {width: '110px', label:'ActionTaken', name:'Action'},
+      {width: '80px', label:'Business', name:'Business'},
+      {width: '120px', label:'TechnicianName', name:'TechnicianName'},
+      {width: '130px', label:'TechnicianAddress', name:'TechnicianAddress'},
+      {width: '110px', label:'TechnicianMobile', name:'TechnicianMobile'},
+      {width: '80px', label: 'WCImage', name: 'WCImage'},
+      {width: '80px', label: 'BillImage', name: 'BillImage'},
+      {width: '100px', label: 'TotalCost', name: 'TotalCost'},
     ];
     columns.forEach((column) => {
       sortOrders[column.name] = 1;
@@ -271,7 +285,8 @@ export default {
         dir:'desc',
         fromDate: '',
         toDate: '',
-        serviceTime: ''
+        serviceTime: '',
+        business: ''
       },
       pagination:{
         lastPage:'',
@@ -304,7 +319,7 @@ export default {
         'Technician Name': 'TechnicianName',
         'Technician Address': 'TechnicianAddress',
         'Technician Mobile': 'TechnicianMobile',
-        'Total Cost': 'OutsourceTotalCost',
+        'Total Cost': 'TotalCost',
       },
       json_data: [],
       json_meta: [
@@ -407,6 +422,7 @@ export default {
       this.tableData.fromDate = '';
       this.tableData.toDate = '';
       this.tableData.serviceTime = '';
+      this.tableData.business = '';
       this.allService();
       this.exportReport();
     },
@@ -849,6 +865,24 @@ export default {
   background: linear-gradient(135deg, #00a381 0%, #40d4ae 100%);
   transform: translateY(-1px);
   box-shadow: 0 2px 6px rgba(0, 184, 148, 0.3);
+  color: #fff;
+}
+
+/* Business Badges */
+.badge-business {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+.badge-biz-k {
+  background: linear-gradient(135deg, #0984e3, #74b9ff);
+  color: #fff;
+}
+.badge-biz-l {
+  background: linear-gradient(135deg, #00b894, #55efc4);
   color: #fff;
 }
 

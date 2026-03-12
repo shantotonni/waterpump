@@ -214,27 +214,27 @@ export default {
   data: () => {
     let sortOrders = {};
     let columns = [
-      {width: '20%', label: 'SL', name: 'ServiceMasterID'},
-      {width: '20%', label: 'StaffID', name: 'StaffID'},
-      {width: '20%', label: 'StaffName', name: 'UserName'},
-      {width: '20%', label: 'Territory', name: 'Territory'},
-      {width: '20%', label: 'CustomerName', name: 'CustomerName'},
-      {width: '20%', label: 'District', name: 'District'},
-      {width: '20%', label: 'Address', name: 'Address'},
-      {width: '20%', label: 'CustomerMobile', name: 'CustomerMobile'},
-      {width: '20%', label: 'AttendDate', name: 'AttendDate'},
-      {width: '20%', label: 'ProductCode', name: 'ProductCode'},
-      {width: '20%', label: 'ModelName', name: 'Model'},
-      {width: '20%', label: 'PurchaseDate', name: 'PurchaseDate'},
-      {width: '20%', label: 'ActionTaken', name: 'Action'},
-      {width: '20%', label: 'ServiceTime', name: 'ServiceTime'},
-      {width: '20%', label: 'Business', name: 'Business'},
-      {width: '20%', label: 'ServiceCharge', name: 'Service Charge'},
-      {width: '20%', label: 'MRNo.', name: 'MRNo'},
-      {width: '20%', label: 'WarrantyCard No.', name: 'WarrantyCardNo'},
-      {width: '20%', label: 'RatingPoint', name: 'RattingPoint'},
-      {width: '20%', label: 'EntryDate', name: 'EntryDate'},
-      {width: '20%', label: 'Remarks', name: 'Remarks'},
+      {width: '60px', label: 'SL', name: 'ServiceMasterID'},
+      {width: '80px', label: 'StaffID', name: 'StaffID'},
+      {width: '120px', label: 'StaffName', name: 'UserName'},
+      {width: '100px', label: 'Territory', name: 'Territory'},
+      {width: '130px', label: 'CustomerName', name: 'CustomerName'},
+      {width: '100px', label: 'District', name: 'District'},
+      {width: '130px', label: 'Address', name: 'Address'},
+      {width: '110px', label: 'CustomerMobile', name: 'CustomerMobile'},
+      {width: '95px', label: 'AttendDate', name: 'AttendDate'},
+      {width: '90px', label: 'ProductCode', name: 'ProductCode'},
+      {width: '100px', label: 'ModelName', name: 'Model'},
+      {width: '95px', label: 'PurchaseDate', name: 'PurchaseDate'},
+      {width: '110px', label: 'ActionTaken', name: 'Action'},
+      {width: '90px', label: 'ServiceTime', name: 'ServiceTime'},
+      {width: '80px', label: 'Business', name: 'Business'},
+      {width: '100px', label: 'ServiceCharge', name: 'Service Charge'},
+      {width: '80px', label: 'MRNo.', name: 'MRNo'},
+      {width: '110px', label: 'WarrantyCard No.', name: 'WarrantyCardNo'},
+      {width: '80px', label: 'RatingPoint', name: 'RattingPoint'},
+      {width: '95px', label: 'EntryDate', name: 'EntryDate'},
+      {width: '80px', label: 'Remarks', name: 'Remarks'},
     ];
     columns.forEach((column) => {
       sortOrders[column.name] = 1;
@@ -639,15 +639,17 @@ export default {
 /* ====== Table Section ====== */
 .table-section {
   padding: 0 20px;
+  overflow-x: auto;
 }
 .table-section >>> .tableFixHead {
   border-radius: 8px;
   border: 1px solid #e9ecef;
-  overflow: hidden;
-  overflow-y: auto;
+  overflow: auto;
+  max-height: 520px;
 }
 .table-section >>> table {
   margin-bottom: 0;
+  min-width: 1900px;
 }
 .table-section >>> thead th {
   background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%) !important;

@@ -213,11 +213,12 @@ class ReportController extends Controller
         $fromDate = $request->input('fromDate');
         $toDate = $request->input('toDate');
         $serviceTime = $request->input('serviceTime');
+        $business = $request->input('business');
 
         try {
             return response()->json([
                 'status' => true,
-                'serviceMaster' => $this->getSelfService($columns, $length, $column, $dir, $searchValue, $draw, $fromDate, $toDate, $serviceTime)
+                'serviceMaster' => $this->getSelfService($columns, $length, $column, $dir, $searchValue, $draw, $fromDate, $toDate, $serviceTime, $business)
             ], 200)->header('Content-Type', 'application/json');
         } catch (NotFoundHttpException $e) {
             return response()->json(['status' => false, 'message' => 'Nothing found', 'error' => $e], Response::HTTP_NOT_FOUND)
@@ -237,11 +238,12 @@ class ReportController extends Controller
         $fromDate = $request->input('fromDate');
         $toDate = $request->input('toDate');
         $serviceTime = $request->input('serviceTime');
+        $business = $request->input('business');
 
         try {
             return response()->json([
                 'status' => true,
-                'serviceMaster' => $this->getOutsourceService($columns, $length, $column, $dir, $searchValue, $draw, $fromDate, $toDate, $serviceTime)
+                'serviceMaster' => $this->getOutsourceService($columns, $length, $column, $dir, $searchValue, $draw, $fromDate, $toDate, $serviceTime, $business)
             ], 200)->header('Content-Type', 'application/json');
         } catch (NotFoundHttpException $e) {
             return response()->json(['status' => false, 'message' => 'Nothing found', 'error' => $e], Response::HTTP_NOT_FOUND)
@@ -456,7 +458,7 @@ class ReportController extends Controller
         return ['data' => $allServices, 'draw' => $draw];
     }
 
-    public function getSelfService($columns, $length, $column, $dir, $searchValue, $draw, $fromDate, $toDate, $serviceTime){
+    public function getSelfService($columns, $length, $column, $dir, $searchValue, $draw, $fromDate, $toDate, $serviceTime, $business = ''){
 
         $query = Report::leftJoin('ViewDistrict AS D', 'D.DistrictCode', '=', 'ServiceMaster.DistrictCode')
             ->join('users AS U', 'U.staffid', '=', 'ServiceMaster.StaffID')
@@ -472,7 +474,7 @@ class ReportController extends Controller
                 DB::raw('CONVERT(VARCHAR(100), ServiceMaster.MRNo) AS MRNo'),'ServiceMaster.Status',
                 DB::raw('CONVERT(VARCHAR(100), ServiceMaster.WarrantyCardNo) AS WarrantyCardNo'),'ServiceMaster.EntryBy',
                 DB::raw("CONVERT(VARCHAR(23), ServiceMaster.EntryDate, 103) +' '+ CONVERT(VARCHAR(23), ServiceMaster.EntryDate, 114) EntryDate"), 'T.TTYCode', 'T.TTYName', 'M.BrandCode', 'M.Brandname', 'U.username AS StaffName', 'D.DistrictName',
-                DB::raw('ISNULL(P.Point,0) AS Point'),'P.Feedback','SelfService.TotalCost as SelfTotalCost')
+                DB::raw('ISNULL(P.Point,0) AS Point'),'P.Feedback','SelfService.TotalCost as SelfTotalCost','ServiceMaster.Business')
             ->orderBy('ServiceMaster.'.$columns[$column], $dir);
         if($searchValue){
             $query->where(function($query) use ($searchValue){
@@ -492,6 +494,10 @@ class ReportController extends Controller
 
         if(!empty($serviceTime)){
             $query->where('ServiceMaster.ServiceTime', '=', $serviceTime);
+        }
+
+        if(!empty($business)){
+            $query->where('ServiceMaster.Business', '=', $business);
         }
         // return $query;
 
@@ -551,7 +557,7 @@ class ReportController extends Controller
 
     }
 
-    public function getOutsourceService($columns, $length, $column, $dir, $searchValue, $draw, $fromDate, $toDate, $serviceTime){
+    public function getOutsourceService($columns, $length, $column, $dir, $searchValue, $draw, $fromDate, $toDate, $serviceTime, $business = ''){
         $query = Report::join('ViewDistrict AS D', 'D.DistrictCode', '=', 'ServiceMaster.DistrictCode')
             ->join('users AS U', 'U.staffid', '=', 'ServiceMaster.StaffID')
             ->join('Territory AS T', 'T.TTYCode', '=', 'ServiceMaster.TerritoryCode')
@@ -567,7 +573,7 @@ class ReportController extends Controller
                 DB::raw('CONVERT(VARCHAR(255), ServiceMaster.WarrantyCardNo) AS WarrantyCardNo'),'ServiceMaster.EntryBy',
                 DB::raw("CONVERT(VARCHAR(50), ServiceMaster.EntryDate, 103) +' '+ CONVERT(VARCHAR(50), ServiceMaster.EntryDate, 114) EntryDate"), 'T.TTYCode', 'T.TTYName', 'M.BrandCode', 'M.Brandname', 'U.username AS StaffName', 'D.DistrictName',
                 DB::raw('ISNULL(P.Point,0) AS Point'),
-                'P.Feedback','OutsourceService.TotalCost as OutsourceTotalCost','OutsourceService.TechnicianName','OutsourceService.TechnicianMobile','OutsourceService.TechnicianAddress')
+                'P.Feedback','OutsourceService.TotalCost as OutsourceTotalCost','OutsourceService.TechnicianName','OutsourceService.TechnicianMobile','OutsourceService.TechnicianAddress','ServiceMaster.Business')
             ->orderBy('ServiceMaster.'.$columns[$column], $dir);
         if($searchValue){
             $query->where(function($query) use ($searchValue){
@@ -587,6 +593,10 @@ class ReportController extends Controller
 
         if(!empty($serviceTime)){
             $query->where('ServiceMaster.ServiceTime', '=', $serviceTime);
+        }
+
+        if(!empty($business)){
+            $query->where('ServiceMaster.Business', '=', $business);
         }
         // return $query;
 
